@@ -1,0 +1,27 @@
+pluginManagement {
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
+            }
+        }
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS) // Giữ nguyên chế độ này
+    repositories {
+        google()        // Repository cho AndroidX, Google libraries
+        mavenCentral()  // Repository cho các thư viện khác
+    }
+}
+
+rootProject.name = "MockProject"
+include ':app'
+include ':domain'
+include ':data'
+include ':presentation'

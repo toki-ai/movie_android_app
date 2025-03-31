@@ -1,0 +1,45 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    compileSdk 35
+    namespace "com.example.data"
+    defaultConfig {
+        minSdk 26
+        targetSdk 35
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+
+dependencies {
+    // AndroidX Core
+    implementation 'androidx.core:core:1.13.1'
+
+    // Room
+    implementation 'androidx.room:room-runtime:2.6.1'
+    annotationProcessor 'androidx.room:room-compiler:2.6.1'
+    implementation 'androidx.room:room-rxjava3:2.6.1'
+
+    // Retrofit & RxJava
+    implementation 'com.squareup.retrofit2:retrofit:2.11.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.11.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava3:2.11.0'
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.8'
+    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+
+    // Paging
+    implementation 'androidx.paging:paging-runtime:3.3.2'
+    implementation 'androidx.paging:paging-rxjava3:3.3.2'
+
+    // Gson
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    // Module domain
+    implementation project(':domain')
+}

@@ -1,0 +1,25 @@
+plugins {
+    id 'com.android.library'
+}
+
+android {
+    compileSdk 35
+    namespace "com.example.domain"
+    defaultConfig {
+        minSdk 26
+        targetSdk 35
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+}
+
+
+dependencies {
+    implementation 'io.reactivex.rxjava3:rxjava:3.1.8'
+    implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
+    implementation 'androidx.paging:paging-runtime:3.3.2'
+    implementation 'androidx.paging:paging-rxjava3:3.3.2'
+}
