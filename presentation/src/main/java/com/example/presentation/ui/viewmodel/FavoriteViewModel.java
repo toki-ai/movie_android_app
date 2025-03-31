@@ -28,7 +28,7 @@ public class FavoriteViewModel extends ViewModel {
     }
 
     @SuppressLint("CheckResult")
-    private void loadFavoriteMovies() {
+    public void loadFavoriteMovies() {
         getFavoriteMoviesUseCase.execute()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

@@ -55,6 +55,10 @@ public class FavoriteFragment extends Fragment {
         favoriteViewModel.getFavoriteMovies().observe(getViewLifecycleOwner(), movies -> {
             adapter.submitData(getViewLifecycleOwner().getLifecycle(), androidx.paging.PagingData.from(movies));
         });
+
+        movieViewModel.getFavoriteChangeLiveData().observe(getViewLifecycleOwner(), changedMovie -> {
+            favoriteViewModel.loadFavoriteMovies();
+        });
     }
 
     @Override

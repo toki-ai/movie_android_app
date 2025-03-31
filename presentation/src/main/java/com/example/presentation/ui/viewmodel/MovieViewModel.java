@@ -43,14 +43,16 @@ public class MovieViewModel extends ViewModel {
     public void toggleFavorite(Movie movie) {
         boolean newFavoriteState = !movie.isFavorite();
         movie.setFavorite(newFavoriteState);
-        notifyFavoriteChange(movie);
         if (newFavoriteState) {
             addFavorite(movie);
+            notifyFavoriteChange(movie);
         } else {
             removeFavorite(movie);
+            notifyFavoriteChange(movie);
         }
     }
 
+    @SuppressLint("CheckResult")
     private void addFavorite(Movie movie) {
         addFavoriteMovieUseCase.execute(movie)
                 .subscribeOn(Schedulers.io())
@@ -61,6 +63,7 @@ public class MovieViewModel extends ViewModel {
                 );
     }
 
+    @SuppressLint("CheckResult")
     private void removeFavorite(Movie movie) {
         removeFavoriteMovieUseCase.execute(movie)
                 .subscribeOn(Schedulers.io())
