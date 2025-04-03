@@ -17,13 +17,11 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class FavoriteViewModel extends ViewModel {
     private final GetFavoriteMoviesUseCase getFavoriteMoviesUseCase;
-    private final RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase;
     private final MutableLiveData<List<Movie>> favoriteMoviesLiveData = new MutableLiveData<>();
 
     public FavoriteViewModel(GetFavoriteMoviesUseCase getFavoriteMoviesUseCase,
                              RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase) {
         this.getFavoriteMoviesUseCase = getFavoriteMoviesUseCase;
-        this.removeFavoriteMovieUseCase = removeFavoriteMovieUseCase;
         loadFavoriteMovies();
     }
 
@@ -40,16 +38,5 @@ public class FavoriteViewModel extends ViewModel {
 
     public LiveData<List<Movie>> getFavoriteMovies() {
         return favoriteMoviesLiveData;
-    }
-
-    @SuppressLint("CheckResult")
-    public void removeFavorite(Movie movie) {
-        removeFavoriteMovieUseCase.execute(movie)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        (Void result) -> loadFavoriteMovies(),
-                        throwable -> {}
-                );
     }
 }

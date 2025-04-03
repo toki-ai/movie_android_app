@@ -1,5 +1,8 @@
 package com.example.presentation.di;
 
+import com.example.domain.repository.UserRepository;
+import com.example.domain.usecase.GetUserUseCase;
+import com.example.domain.usecase.SaveUserUseCase;
 import com.example.presentation.MainActivity;
 import com.example.presentation.MyApplication;
 import com.example.presentation.ui.fragment.AboutFragment;
@@ -19,4 +22,7 @@ public interface AppComponent {
     void inject(FavoriteFragment fragment);
     void inject(SettingFragment fragment);
     void inject(AboutFragment fragment);
+    UserRepository userRepository();
+    GetUserUseCase getUserUseCase();
+    SaveUserUseCase saveUserUseCase();
 }

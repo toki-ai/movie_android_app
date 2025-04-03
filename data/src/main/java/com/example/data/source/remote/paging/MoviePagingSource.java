@@ -53,10 +53,7 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
                                 for (MovieDto dto : dtos) {
                                     boolean isFavorite = favoriteIds.contains(dto.getId());
                                     movies.add(mapper.map(dto, isFavorite));
-                                    Log.d("HIHI", "BAAAA");
                                 }
-
-
 
                                 Integer nextKey = (page < response.getTotalPages()) ? page + 1 : null;
                                 Integer prevKey = (page == 1) ? null : page - 1;
@@ -64,7 +61,6 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
                                 return new LoadResult.Page<>(movies, prevKey, nextKey);
                             });
                 });
-
     }
 
     @Nullable

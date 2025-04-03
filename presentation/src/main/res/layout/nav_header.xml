@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="viewModel"
+            type="com.example.presentation.ui.viewmodel.UserViewModel" />
+        <variable
+            name="isEditMode"
+            type="boolean" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:background="@android:color/white">
+
+        <ImageView
+            android:id="@+id/profile_avatar"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:background="@drawable/shape_avatar_round"
+            android:backgroundTint="@color/beige"
+            android:clipToOutline="true"
+            android:scaleType="centerCrop"
+            app:imageUrl="@{viewModel.userProfile.image}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginTop="50dp" />
+
+        <EditText
+            android:id="@+id/profile_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:text="@={viewModel.userProfile.name}"
+            android:textAlignment="center"
+            android:textStyle="bold"
+            android:enabled="@{isEditMode}"
+            android:backgroundTint="@color/white"
+            android:textSize="24dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/profile_avatar" />
+
+        <ImageView
+            android:id="@+id/drawer_icon_cake"
+            android:contentDescription="icon cake"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/icon_drawer_cake"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_name" />
+
+        <EditText
+            android:id="@+id/profile_birthday"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="DD/MM/YYYY"
+            android:text="@={viewModel.userProfile.birthday}"
+            android:enabled="@{isEditMode}"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="@color/white"
+            android:textSize="15dp"
+            app:layout_constraintStart_toEndOf="@id/drawer_icon_cake"
+            app:layout_constraintTop_toBottomOf="@+id/profile_name" />
+
+        <ImageView
+            android:id="@+id/drawer_icon_mail"
+            android:contentDescription="icon mail"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/icon_drawer_mail"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/drawer_icon_cake" />
+
+        <EditText
+            android:id="@+id/profile_mail"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="email@gmail.com"
+            android:text="@={viewModel.userProfile.email}"
+            android:enabled="@{isEditMode}"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:backgroundTint="@color/white"
+            android:textSize="15dp"
+            app:layout_constraintStart_toEndOf="@id/drawer_icon_cake"
+            app:layout_constraintTop_toBottomOf="@+id/drawer_icon_cake" />
+
+        <ImageView
+            android:id="@+id/drawer_icon_gender"
+            android:contentDescription="icon gender"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="20dp"
+            android:src="@drawable/icon_drawer_genders"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/drawer_icon_mail" />
+
+        <RadioGroup
+            android:id="@+id/profile_genders"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@id/drawer_icon_cake"
+            app:layout_constraintTop_toBottomOf="@+id/drawer_icon_mail"
+            android:orientation="horizontal">
+            <RadioButton
+                android:id="@+id/radio_male"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="@{isEditMode}"
+                android:checked="@={viewModel.userProfile.gender}"
+                android:text="Male" />
+            <RadioButton
+                android:id="@+id/radio_female"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:enabled="@{isEditMode}"
+                android:checked="@={!viewModel.userProfile.gender}"
+                android:text="Female" />
+        </RadioGroup>
+
+        <TextView
+            android:id="@+id/profile_btn_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Edit Profile"
+            android:background="@drawable/shape_button"
+            android:textColor="@color/white"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            android:visibility="@{isEditMode ? View.GONE : View.VISIBLE}"
+            android:onClick="@{() -> viewModel.toggleEditMode(true)}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/drawer_icon_gender" />
+
+        <TextView
+            android:id="@+id/profile_btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Cancel"
+            android:visibility="@{isEditMode ? View.VISIBLE : View.GONE}"
+            android:background="@drawable/shape_button_gray"
+            android:textColor="@color/white"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            android:onClick="@{() -> viewModel.toggleEditMode(false)}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/profile_btn_save"
+            app:layout_constraintTop_toBottomOf="@+id/profile_genders" />
+
+        <TextView
+            android:id="@+id/profile_btn_save"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Save"
+            android:visibility="@{isEditMode ? View.VISIBLE : View.GONE}"
+            android:background="@drawable/shape_button"
+            android:textColor="@color/white"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            android:onClick="@{() -> viewModel.saveProfile()}"
+            app:layout_constraintStart_toEndOf="@+id/profile_btn_cancel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_genders" />
+
+        <TextView
+            android:id="@+id/reminder_drawer_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="50dp"
+            android:textStyle="bold"
+            android:text="Reminder List:"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/profile_genders" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/reminder_short_list"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:background="@color/beige"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/reminder_drawer_title"
+            app:layout_constraintBottom_toTopOf="@+id/reminder_btn_show" />
+
+        <TextView
+            android:id="@+id/reminder_btn_show"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:text="Show All"
+            android:background="@drawable/shape_button"
+            android:textColor="@color/white"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

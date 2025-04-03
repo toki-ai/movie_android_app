@@ -6,16 +6,22 @@ import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.data.repository.MovieRepositoryImpl;
+import com.example.data.repository.UserRepositoryImpl;
 import com.example.data.source.local.AppDatabase;
 import com.example.data.source.local.dao.FavoriteMovieDao;
+import com.example.data.source.remote.firebase.FirebaseUserDataSource;
 import com.example.data.source.remote.service.MovieApiService;
 import com.example.domain.repository.MovieRepository;
+import com.example.domain.repository.UserRepository;
 import com.example.domain.usecase.AddFavoriteMovieUseCase;
 import com.example.domain.usecase.GetFavoriteMoviesUseCase;
 import com.example.domain.usecase.GetMoviesPagedUseCase;
+import com.example.domain.usecase.GetUserUseCase;
 import com.example.domain.usecase.RemoveFavoriteMovieUseCase;
+import com.example.domain.usecase.SaveUserUseCase;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
+import com.example.presentation.ui.viewmodel.UserViewModel;
 import com.example.presentation.util.ViewModelFactory;
 import com.example.presentation.util.ViewModelKey;
 
@@ -138,8 +144,35 @@ public class AppModule {
     }
 
     @Provides
+    @IntoMap
+    @ViewModelKey(UserViewModel.class)
+    ViewModel provideUserViewModel(GetUserUseCase getUserUseCase, SaveUserUseCase saveUserUseCase) {
+        return new UserViewModel(getUserUseCase, saveUserUseCase);
+    }
+
+    @Provides
     @Singleton
     ViewModelProvider.Factory provideViewModelFactory(Map<Class<? extends ViewModel>, Provider<ViewModel>> viewModels) {
         return new ViewModelFactory(viewModels);
+    }
+
+    @Provides
+    FirebaseUserDataSource provideFirebaseUserDataSource() {
+        return new FirebaseUserDataSource();
+    }
+
+    @Provides
+    UserRepository provideUserRepository(FirebaseUserDataSource dataSource) {
+        return new UserRepositoryImpl(dataSource);
+    }
+
+    @Provides
+    GetUserUseCase provideGetUserUseCase(UserRepository repository) {
+        return new GetUserUseCase(repository);
+    }
+
+    @Provides
+    SaveUserUseCase provideSaveUserUseCase(UserRepository repository) {
+        return new SaveUserUseCase(repository);
     }
 }

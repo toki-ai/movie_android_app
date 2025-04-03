@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "820238600366",
+    "project_id": "mock-aa25f",
+    "storage_bucket": "mock-aa25f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:820238600366:android:8ddc8f5c03caa5c2e7053f",
+        "android_client_info": {
+          "package_name": "com.example.presentation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAR2EhMAgwIOtrEf3fKgnNWFOAokLMJzy8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
