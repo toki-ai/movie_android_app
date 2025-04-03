@@ -1,6 +1,5 @@
 package com.example.presentation.ui.adapter;
 
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -16,6 +15,9 @@ import com.example.presentation.databinding.ItemMovieListBinding;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 
 public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieViewHolder> {
+    private static final int VIEW_TYPE_LIST = 0;
+    private static final int VIEW_TYPE_GRID = 1;
+
     private boolean isGridMode;
     private final MovieViewModel viewModel;
 
@@ -37,18 +39,23 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
 
     public void toggleViewMode() {
         isGridMode = !isGridMode;
-        notifyDataSetChanged();
+        notifyDataSetChanged(); // Thông báo rằng tất cả các item cần được làm mới
     }
 
     public boolean isGridMode() {
         return isGridMode;
     }
 
+    @Override
+    public int getItemViewType(int position) {
+        return isGridMode ? VIEW_TYPE_GRID : VIEW_TYPE_LIST;
+    }
+
     @NonNull
     @Override
     public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
-        if (isGridMode) {
+        if (viewType == VIEW_TYPE_GRID) {
             ItemMovieGridBinding binding = DataBindingUtil.inflate(
                     inflater, R.layout.item_movie_grid, parent, false
             );
