@@ -12,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -62,7 +63,7 @@ public class ListMoviesFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
-        adapter = new MovieAdapter(false, viewModel);
+        adapter = new MovieAdapter(false, viewModel, NavHostFragment.findNavController(this), MovieAdapter.TYPE.List);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         sharedViewModel.getIsGridLiveData().observe(getViewLifecycleOwner(), isGrid -> updateViewMode(isGrid));
         binding.recyclerView.setAdapter(adapter);

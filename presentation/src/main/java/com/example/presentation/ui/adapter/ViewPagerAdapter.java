@@ -1,39 +1,31 @@
 package com.example.presentation.ui.adapter;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
-import com.example.presentation.ui.fragment.AboutFragment;
-import com.example.presentation.ui.fragment.FavoriteFragment;
-import com.example.presentation.ui.fragment.ListMoviesFragment;
-import com.example.presentation.ui.fragment.SettingFragment;
+import com.example.presentation.R;
 
 public class ViewPagerAdapter extends FragmentStateAdapter {
-    public ViewPagerAdapter(@NonNull AppCompatActivity activity) {
-        super(activity);
+    private static final int[] NAV_GRAPHS = {
+            R.navigation.nav_list,
+            R.navigation.nav_favorite,
+            R.navigation.nav_setting,
+            R.navigation.nav_about
+    };
+
+    public ViewPagerAdapter(FragmentActivity fragmentActivity) {
+        super(fragmentActivity);
     }
 
-    @NonNull
     @Override
     public Fragment createFragment(int position) {
-        switch (position) {
-            case 0:
-                return new ListMoviesFragment();
-            case 1:
-                return new FavoriteFragment();
-            case 2:
-                return new SettingFragment();
-            case 3:
-                return new AboutFragment();
-            default:
-                return new ListMoviesFragment();
-        }
+        return NavHostFragment.create(NAV_GRAPHS[position]);
     }
 
     @Override
     public int getItemCount() {
-        return 4;
+        return NAV_GRAPHS.length;
     }
 }

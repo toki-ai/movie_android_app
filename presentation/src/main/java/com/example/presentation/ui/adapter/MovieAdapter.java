@@ -6,8 +6,10 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.databinding.DataBindingUtil;
+import androidx.navigation.NavController;
 import androidx.paging.PagingDataAdapter;
 import androidx.recyclerview.widget.DiffUtil;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.domain.entity.Movie;
 import com.example.presentation.R;
@@ -21,8 +23,13 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
 
     private boolean isGridMode;
     private final MovieViewModel viewModel;
+    private final NavController navController;
+    private final TYPE fragmentType;
+    public enum TYPE{
+        Favorite, List
+    }
 
-    public MovieAdapter(boolean isGridMode, MovieViewModel viewModel) {
+    public MovieAdapter(boolean isGridMode, MovieViewModel viewModel, NavController navController, TYPE fragmentType) {
         super(new DiffUtil.ItemCallback<Movie>() {
             @Override
             public boolean areItemsTheSame(@NonNull Movie oldItem, @NonNull Movie newItem) {
@@ -36,6 +43,8 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
         });
         this.isGridMode = isGridMode;
         this.viewModel = viewModel;
+        this.navController = navController;
+        this.fragmentType = fragmentType;
     }
 
     public void toggleViewMode() {
@@ -77,7 +86,7 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
         }
     }
 
-    class MovieViewHolder extends androidx.recyclerview.widget.RecyclerView.ViewHolder {
+    class MovieViewHolder extends RecyclerView.ViewHolder {
         private ItemMovieGridBinding gridBinding;
         private ItemMovieListBinding listBinding;
 
@@ -89,6 +98,12 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
         MovieViewHolder(ItemMovieListBinding binding) {
             super(binding.getRoot());
             this.listBinding = binding;
+
+            itemView.setOnClickListener(v -> {
+                if (navController != null) {
+                    navController.navigate(fragmentType.equals(TYPE.List) ? R.id.action_listMoviesFragment_to_movieDetailFragment : R.id.action_favoriteFragment_to_movieDetailFragment);
+                }
+            });
         }
 
         void bind(Movie movie) {
