@@ -1,9 +1,6 @@
-package com.example.presentation;
+package com.example.presentation.di;
 
 import android.app.Application;
-import com.example.presentation.di.AppComponent;
-import com.example.presentation.di.AppModule;
-import com.example.presentation.di.DaggerAppComponent;
 
 public class MyApplication extends Application {
     private static AppComponent appComponent;

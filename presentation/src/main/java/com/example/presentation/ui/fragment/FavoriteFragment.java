@@ -8,10 +8,9 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.presentation.MyApplication;
+import com.example.presentation.di.MyApplication;
 import com.example.presentation.databinding.FragmentFavoriteBinding;
 import com.example.presentation.ui.adapter.MovieAdapter;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;

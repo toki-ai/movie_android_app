@@ -10,7 +10,6 @@ import androidx.lifecycle.ViewModel;
 import com.example.domain.entity.User;
 import com.example.domain.usecase.GetUserUseCase;
 import com.example.domain.usecase.SaveUserUseCase;
-import com.example.presentation.MyApplication;
 import com.example.presentation.ui.model.UserProfile;
 
 import javax.inject.Inject;

@@ -12,13 +12,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.paging.PagingData;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.domain.entity.Movie;
-import com.example.presentation.MyApplication;
+import com.example.presentation.di.MyApplication;
 import com.example.presentation.databinding.FragmentListMoviesBinding;
 import com.example.presentation.ui.adapter.MovieAdapter;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
@@ -61,11 +60,11 @@ public class ListMoviesFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SharedViewModel sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
-        sharedViewModel.getIsGridLiveData().observe(getViewLifecycleOwner(), isGrid -> updateViewMode(isGrid));
+        SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         adapter = new MovieAdapter(false, viewModel);
-        binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext())); // Thêm mặc định
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        sharedViewModel.getIsGridLiveData().observe(getViewLifecycleOwner(), isGrid -> updateViewMode(isGrid));
         binding.recyclerView.setAdapter(adapter);
         viewModel.refreshMovies();
         disposables.add(
@@ -90,21 +89,15 @@ public class ListMoviesFragment extends Fragment {
         );
 
         viewModel.getFavoriteChangeLiveData().observe(getViewLifecycleOwner(), changedMovie -> {
-            int position = findMoviePosition(changedMovie);
-            if (position != -1) {
-                adapter.notifyItemChanged(position);
+            for (int i = 0; i < adapter.getItemCount(); i++) {
+                Movie movie = adapter.peek(i);
+                if (movie != null && movie.getId() == changedMovie.getId()) {
+                    movie.setFavorite(changedMovie.isFavorite());
+                    adapter.notifyItemChanged(i);
+                    break;
+                }
             }
         });
-    }
-
-    private int findMoviePosition(Movie changedMovie) {
-        for (int i = 0; i < adapter.getItemCount(); i++) {
-            Movie movie = adapter.peek(i);
-            if (movie != null && movie.getId() == changedMovie.getId()) {
-                return i;
-            }
-        }
-        return -1;
     }
 
     private void updateLayoutManager() {

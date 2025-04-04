@@ -12,8 +12,8 @@ import java.util.List;
 public interface MovieRepository {
     Flowable<PagingData<Movie>> getMovies(String type);
     Single<List<Movie>> getFavoriteMovies();
-    Single<Void> addToFavorites(Movie movie);
-    Single<Void> removeFromFavorites(Movie movie);
+    Completable addToFavorites(Movie movie);
+    Completable removeFromFavorites(Movie movie);
 
     //Completable addMovieToFavorite(Movie movie);
     //

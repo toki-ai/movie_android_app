@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
@@ -73,9 +74,8 @@ public class MovieRepositoryImpl implements MovieRepository {
                     return movies;
                 });
     }
-
     @Override
-    public Single<Void> addToFavorites(Movie movie) {
+    public Completable addToFavorites(Movie movie) {
         FavoriteMovieEntity entity = new FavoriteMovieEntity(
                 movie.getId(),
                 movie.isAdult(),
@@ -87,24 +87,24 @@ public class MovieRepositoryImpl implements MovieRepository {
                 movie.getTitle()
         );
         return favoriteDao.insertFavorite(entity)
-                .map(result -> {
+                .flatMapCompletable(result -> {
                     if (result > 0) {
                         movie.setFavorite(true);
-                        return null;
+                        return Completable.complete();
                     }
-                    throw new Exception("Failed to add to favorites");
+                    return Completable.error(new Exception("Failed to add to favorites"));
                 });
     }
 
     @Override
-    public Single<Void> removeFromFavorites(Movie movie) {
+    public Completable removeFromFavorites(Movie movie) {
         return favoriteDao.deleteFavorite(movie.getId())
-                .map(result -> {
+                .flatMapCompletable(result -> {
                     if (result > 0) {
                         movie.setFavorite(false);
-                        return null;
+                        return Completable.complete();
                     }
-                    throw new Exception("Failed to remove from favorites");
+                    return Completable.error(new Exception("Failed to remove from favorites"));
                 });
     }
 }

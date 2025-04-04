@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.domain.entity.Movie;
 import com.example.domain.usecase.GetFavoriteMoviesUseCase;
 import com.example.domain.usecase.RemoveFavoriteMovieUseCase;
-import com.example.presentation.MyApplication;
+import com.example.presentation.di.MyApplication;
 
 import java.util.List;
 

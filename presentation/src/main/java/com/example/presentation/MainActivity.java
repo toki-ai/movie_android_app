@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.presentation.databinding.ActivityMainBinding;
 import com.example.presentation.databinding.NavHeaderBinding;
+import com.example.presentation.di.MyApplication;
 import com.example.presentation.ui.adapter.ViewPagerAdapter;
 import com.example.presentation.ui.viewmodel.SharedViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;

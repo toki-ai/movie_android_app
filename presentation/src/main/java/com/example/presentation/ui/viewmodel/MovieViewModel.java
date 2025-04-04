@@ -6,18 +6,13 @@ import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelKt;
 import androidx.paging.PagingData;
-import androidx.paging.rxjava3.PagingRx;
 
 import com.example.domain.entity.Movie;
 import com.example.domain.usecase.AddFavoriteMovieUseCase;
 import com.example.domain.usecase.GetMoviesPagedUseCase;
-import com.example.domain.usecase.GetUserUseCase;
 import com.example.domain.usecase.RemoveFavoriteMovieUseCase;
 import com.example.data.preference.SettingPreference;
-import com.example.domain.usecase.SaveUserUseCase;
-import com.example.presentation.MyApplication;
 
 import javax.inject.Inject;
 
@@ -26,8 +21,6 @@ import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
-import io.reactivex.rxjava3.subjects.CompletableSubject;
-import io.reactivex.rxjava3.subjects.PublishSubject;
 
 public class MovieViewModel extends ViewModel {
     private Flowable<PagingData<Movie>> moviesFlowable;
@@ -83,7 +76,10 @@ public class MovieViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        result -> notifyFavoriteChange(movie),
+                        () -> {
+                            Log.d("MovieViewModel", "Add favorite succeeded: " + movie.getTitle());
+                            notifyFavoriteChange(movie);
+                        },
                         throwable -> Log.e("AddFavorite", "Error: " + throwable.getMessage())
                 );
     }
@@ -94,7 +90,10 @@ public class MovieViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        result -> notifyFavoriteChange(movie),
+                        () -> {
+                            Log.d("MovieViewModel", "Remove favorite succeeded: " + movie.getTitle());
+                            notifyFavoriteChange(movie);
+                        },
                         throwable -> Log.e("RemoveFavorite", "Error: " + throwable.getMessage())
                 );
     }
