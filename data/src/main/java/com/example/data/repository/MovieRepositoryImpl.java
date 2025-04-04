@@ -1,5 +1,12 @@
 package com.example.data.repository;
 
+import android.content.Context;
+
+import androidx.paging.Pager;
+import androidx.paging.PagingConfig;
+import androidx.paging.PagingData;
+import androidx.paging.rxjava3.PagingRx;
+
 import com.example.data.mapper.FavoriteEntityToMovieMapper;
 import com.example.data.source.local.dao.FavoriteMovieDao;
 import com.example.data.source.local.entity.FavoriteMovieEntity;
@@ -7,38 +14,49 @@ import com.example.data.source.remote.paging.MoviePagingSource;
 import com.example.data.source.remote.service.MovieApiService;
 import com.example.domain.entity.Movie;
 import com.example.domain.repository.MovieRepository;
-
-import androidx.paging.Pager;
-import androidx.paging.PagingConfig;
-import androidx.paging.PagingData;
-import androidx.paging.rxjava3.PagingRx;
+import com.example.data.preference.SettingPreference;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
 public class MovieRepositoryImpl implements MovieRepository {
     private final MovieApiService apiService;
     private final FavoriteMovieDao favoriteDao;
     private final String apiKey;
     private final FavoriteEntityToMovieMapper entityToMovieMapper;
+    private final SettingPreference settingPreference;
+    private final BehaviorSubject<String> categorySubject;
+    private final Flowable<PagingData<Movie>> pagingDataFlowable;
 
-    public MovieRepositoryImpl(MovieApiService apiService, FavoriteMovieDao favoriteDao, String apiKey) {
+    public MovieRepositoryImpl(MovieApiService apiService, FavoriteMovieDao favoriteDao, String apiKey, Context context) {
         this.apiService = apiService;
         this.favoriteDao = favoriteDao;
         this.apiKey = apiKey;
         this.entityToMovieMapper = new FavoriteEntityToMovieMapper();
+        this.settingPreference = new SettingPreference(context);
+        this.categorySubject = BehaviorSubject.createDefault(settingPreference.getCategory());
+
+        pagingDataFlowable = categorySubject
+                .toFlowable(BackpressureStrategy.LATEST)
+                .switchMap(category -> {
+                    Pager<Integer, Movie> pager = new Pager<>(
+                            new PagingConfig(20),
+                            () -> new MoviePagingSource(apiService, apiKey, favoriteDao, settingPreference)
+                    );
+                    return PagingRx.getFlowable(pager);
+                });
     }
 
     @Override
-    public Flowable<PagingData<Movie>> getMovies() {
-        Pager<Integer, Movie> pager = new Pager<>(
-                new PagingConfig(20, 20, false, 20),
-                () -> new MoviePagingSource(apiService, apiKey, favoriteDao)
-        );
-        return PagingRx.getFlowable(pager);
+    public Flowable<PagingData<Movie>> getMovies(String type) {
+        settingPreference.setCategory(type);
+        categorySubject.onNext(type);
+        return pagingDataFlowable;
     }
 
     @Override
@@ -66,12 +84,24 @@ public class MovieRepositoryImpl implements MovieRepository {
                 movie.getTitle()
         );
         return favoriteDao.insertFavorite(entity)
-                .map(id -> null);
+                .map(result -> {
+                    if (result > 0) {
+                        movie.setFavorite(true);
+                        return null;
+                    }
+                    throw new Exception("Failed to add to favorites");
+                });
     }
 
     @Override
     public Single<Void> removeFromFavorites(Movie movie) {
         return favoriteDao.deleteFavorite(movie.getId())
-                .map(count -> null);
+                .map(result -> {
+                    if (result > 0) {
+                        movie.setFavorite(false);
+                        return null;
+                    }
+                    throw new Exception("Failed to remove from favorites");
+                });
     }
 }

@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@android:color/white</item>
+        <item name="colorPrimaryDark">@android:color/black</item>
+        <item name="colorAccent">@android:color/holo_blue_bright</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
     </style>
+
     <style name="CustomTabTextStyle">
-        <item name="android:textSize">15sp</item> <!-- Đặt size text -->
-        <item name="android:textAllCaps">false</item> <!-- Tắt in hoa -->
+        <item name="android:textSize">15sp</item>
+        <item name="android:textAllCaps">false</item>
     </style>
 </resources>
+

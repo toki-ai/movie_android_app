@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.data.preference.SettingPreference;
 import com.example.data.repository.MovieRepositoryImpl;
 import com.example.data.repository.UserRepositoryImpl;
 import com.example.data.source.local.AppDatabase;
@@ -97,8 +98,8 @@ public class AppModule {
 
     @Provides
     @Singleton
-    MovieRepository provideMovieRepository(MovieApiService apiService, FavoriteMovieDao favoriteDao, String apiKey) {
-        return new MovieRepositoryImpl(apiService, favoriteDao, apiKey);
+    public MovieRepository provideMovieRepository(MovieApiService apiService, FavoriteMovieDao favoriteDao, String apiKey, Context context) {
+        return new MovieRepositoryImpl(apiService, favoriteDao, apiKey, context);
     }
 
     @Provides
@@ -129,10 +130,11 @@ public class AppModule {
     @Singleton
     @IntoMap
     @ViewModelKey(MovieViewModel.class)
-    ViewModel provideMovieViewModel(GetMoviesPagedUseCase getMoviesPagedUseCase,
-                                    AddFavoriteMovieUseCase addFavoriteMovieUseCase,
-                                    RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase) {
-        return new MovieViewModel(getMoviesPagedUseCase, addFavoriteMovieUseCase, removeFavoriteMovieUseCase);
+    public MovieViewModel provideMovieViewModel(GetMoviesPagedUseCase getMoviesPagedUseCase,
+                                                AddFavoriteMovieUseCase addFavoriteMovieUseCase,
+                                                RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase,
+                                                SettingPreference settingPreference) {
+        return new MovieViewModel(getMoviesPagedUseCase, addFavoriteMovieUseCase, removeFavoriteMovieUseCase, settingPreference);
     }
 
     @Provides

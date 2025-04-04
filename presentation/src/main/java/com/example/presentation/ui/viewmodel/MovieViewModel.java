@@ -12,27 +12,39 @@ import com.example.domain.entity.Movie;
 import com.example.domain.usecase.AddFavoriteMovieUseCase;
 import com.example.domain.usecase.GetMoviesPagedUseCase;
 import com.example.domain.usecase.RemoveFavoriteMovieUseCase;
+import com.example.data.preference.SettingPreference;
 
+import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
 public class MovieViewModel extends ViewModel {
-    private final Flowable<PagingData<Movie>> moviesFlowable;
+    private Flowable<PagingData<Movie>> moviesFlowable;
     private final AddFavoriteMovieUseCase addFavoriteMovieUseCase;
     private final RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase;
     private final GetMoviesPagedUseCase getMoviesPagedUseCase;
+    private final SettingPreference settingPreference;
 
     private final MutableLiveData<Movie> favoriteChangeLiveData = new MutableLiveData<>();
+    private final BehaviorSubject<Void> refreshTrigger = BehaviorSubject.createDefault(null); // Sử dụng BehaviorSubject
 
     public MovieViewModel(GetMoviesPagedUseCase getMoviesPagedUseCase,
                           AddFavoriteMovieUseCase addFavoriteMovieUseCase,
-                          RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase) {
+                          RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase,
+                          SettingPreference settingPreference) {
         this.getMoviesPagedUseCase = getMoviesPagedUseCase;
         this.addFavoriteMovieUseCase = addFavoriteMovieUseCase;
         this.removeFavoriteMovieUseCase = removeFavoriteMovieUseCase;
+        this.settingPreference = settingPreference;
 
-        moviesFlowable = getMoviesPagedUseCase.execute();
+        moviesFlowable = refreshTrigger
+                .toFlowable(BackpressureStrategy.LATEST)
+                .switchMap(ignored -> getMoviesPagedUseCase.execute(settingPreference.getCategory()))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+
         androidx.paging.rxjava3.PagingRx.cachedIn(moviesFlowable, androidx.lifecycle.ViewModelKt.getViewModelScope(this));
     }
 
@@ -40,15 +52,17 @@ public class MovieViewModel extends ViewModel {
         return moviesFlowable;
     }
 
+    public void refreshMovies() {
+        refreshTrigger.onNext(null);
+    }
+
     public void toggleFavorite(Movie movie) {
         boolean newFavoriteState = !movie.isFavorite();
         movie.setFavorite(newFavoriteState);
         if (newFavoriteState) {
             addFavorite(movie);
-            notifyFavoriteChange(movie);
         } else {
             removeFavorite(movie);
-            notifyFavoriteChange(movie);
         }
     }
 
