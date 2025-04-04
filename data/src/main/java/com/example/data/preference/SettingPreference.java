@@ -8,7 +8,6 @@ public class SettingPreference {
     private static final String KEY_CATEGORY = "category";
     private static final String KEY_SORT_BY = "sort_by";
     private static final String KEY_MIN_YEAR = "min_year";
-    private static final String KEY_MAX_YEAR = "max_year";
     private static final String KEY_MIN_RATING = "min_rating";
     private static final String KEY_PAGES_PER_LOAD = "pages_per_load";
 
@@ -34,19 +33,12 @@ public class SettingPreference {
         return preferences.getString(KEY_SORT_BY, "rating");
     }
 
-    public void setYearRange(int minYear, int maxYear) {
-        preferences.edit()
-                .putInt(KEY_MIN_YEAR, minYear)
-                .putInt(KEY_MAX_YEAR, maxYear)
-                .apply();
+    public void setYearRange(int minYear) {
+        preferences.edit().putInt(KEY_MIN_YEAR, minYear).apply();
     }
 
     public int getMinYear() {
         return preferences.getInt(KEY_MIN_YEAR, 1900);
-    }
-
-    public int getMaxYear() {
-        return preferences.getInt(KEY_MAX_YEAR, 2024);
     }
 
     public void setMinRating(float minRating) {

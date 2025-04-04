@@ -31,14 +31,6 @@
             app:showSeekBarValue="true"/>
 
         <SeekBarPreference
-            android:key="max_year"
-            android:title="Maximum Year"
-            android:summary="Set maximum release year"
-            android:defaultValue="2024"
-            android:max="2024"
-            app:showSeekBarValue="true"/>
-
-        <SeekBarPreference
             android:key="min_rating"
             android:title="Minimum Rating"
             android:summary="Set minimum rating"

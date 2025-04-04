@@ -11,11 +11,13 @@
         <item>Popular</item>
         <item>Top Rated</item>
         <item>Upcoming</item>
+        <item>Now Playing</item>
     </string-array>
     <string-array name="category_values">
         <item>popular</item>
         <item>top_rated</item>
         <item>upcoming</item>
+        <item>now_playing</item>
     </string-array>
 
     <string-array name="sort_entries">

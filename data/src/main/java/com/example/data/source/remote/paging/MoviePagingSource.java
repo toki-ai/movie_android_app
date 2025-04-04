@@ -12,7 +12,6 @@ import androidx.paging.PagingSource.LoadParams;
 import com.example.data.mapper.MovieDtoToMovieMapper;
 import com.example.data.source.local.dao.FavoriteMovieDao;
 import com.example.data.source.local.entity.FavoriteMovieEntity;
-import com.example.data.source.remote.model.MovieResponse;
 import com.example.data.source.remote.service.MovieApiService;
 import com.example.domain.entity.Movie;
 import com.example.data.preference.SettingPreference;
@@ -20,7 +19,7 @@ import com.example.data.preference.SettingPreference;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -65,10 +64,14 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
 
     private Single<List<Movie>> loadMoviesForPage(int page) {
         String category = settingPreference.getCategory();
+        float minRating = settingPreference.getMinRating();
+        String sortBy = settingPreference.getSortBy();
+        int minYear = settingPreference.getMinYear();
+
         Log.d(TAG, "Loading movies for page " + page + ", category: " + category);
         return apiService.getMoviesByCategory(category, apiKey, page)
                 .flatMap(response -> {
-                    totalPages = response.getTotalPages(); // Lưu totalPages vào biến instance
+                    totalPages = response.getTotalPages();
                     Log.d(TAG, "Page " + page + ": API returned " + response.getMovies().size() + " movies, total pages: " + totalPages);
                     return favoriteDao.getFavoriteMovies()
                             .map(favorites -> {
@@ -76,9 +79,33 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
                                         .map(FavoriteMovieEntity::getId)
                                         .collect(Collectors.toList());
 
-                                return response.getMovies().stream()
+                                List<Movie> movies = response.getMovies().stream()
                                         .map(dto -> mapper.map(dto, favoriteIds.contains(dto.getId())))
                                         .collect(Collectors.toList());
+
+
+                                movies = movies.stream()
+                                        .filter(movie -> movie.getVoteAverage() >= minRating)
+                                        .collect(Collectors.toList());
+
+                                movies = movies.stream()
+                                        .filter(movie -> Integer.parseInt(movie.getReleaseYear()) >= minYear)
+                                        .collect(Collectors.toList());
+
+                                Comparator<Movie> comparator;
+                                if ("rating".equals(sortBy)) {
+                                    comparator = Comparator.comparingDouble(Movie::getVoteAverage).reversed(); // Giảm dần theo rating
+                                } else {
+                                    comparator = Comparator
+                                            .comparing(Movie::getReleaseDate, Comparator.nullsLast(Comparator.naturalOrder()))
+                                            .reversed(); // Giảm dần theo ngày phát hành (releaseDate)
+                                }
+
+                                movies.sort(comparator);
+
+                                Log.d(TAG, "Page " + page + ": After filter and sort, " + movies.size() + " movies remain");
+
+                                return movies;
                             });
                 });
     }
