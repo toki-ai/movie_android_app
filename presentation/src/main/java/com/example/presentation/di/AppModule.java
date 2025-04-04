@@ -19,14 +19,11 @@ import com.example.domain.usecase.SaveUserUseCase;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
-import com.example.presentation.util.ViewModelKey;
 
 import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoMap;
-import okhttp3.OkHttpClient;
-import okhttp3.logging.HttpLoggingInterceptor;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -48,16 +45,8 @@ public class AppModule {
     @Provides
     @Singleton
     Retrofit provideRetrofit() {
-        HttpLoggingInterceptor loggingInterceptor = new HttpLoggingInterceptor();
-        loggingInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-        OkHttpClient client = new OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
-                .build();
-
         return new Retrofit.Builder()
                 .baseUrl("https://api.themoviedb.org/3/")
-                .client(client)
                 .addConverterFactory(GsonConverterFactory.create())
                 .addCallAdapterFactory(RxJava3CallAdapterFactory.create())
                 .build();
@@ -119,8 +108,6 @@ public class AppModule {
 
     @Provides
     @Singleton
-    @IntoMap
-    @ViewModelKey(MovieViewModel.class)
     public MovieViewModel provideMovieViewModel(
             GetMoviesPagedUseCase getMoviesPagedUseCase,
             AddFavoriteMovieUseCase addFavoriteMovieUseCase,
@@ -137,16 +124,12 @@ public class AppModule {
 
     @Provides
     @Singleton
-    @IntoMap
-    @ViewModelKey(FavoriteViewModel.class)
     public FavoriteViewModel provideFavoriteViewModel(GetFavoriteMoviesUseCase useCase, RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase) {
         return new FavoriteViewModel(useCase, removeFavoriteMovieUseCase);
     }
 
     @Provides
     @Singleton
-    @IntoMap
-    @ViewModelKey(UserViewModel.class)
     public UserViewModel provideUserViewModel(GetUserUseCase getUserUseCase, SaveUserUseCase saveUserUseCase) {
         return new UserViewModel(getUserUseCase, saveUserUseCase);
     }

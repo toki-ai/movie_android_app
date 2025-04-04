@@ -19,16 +19,6 @@
                 android:elevation="4dp"
                 android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
                 app:layout_constraintTop_toTopOf="parent">
-                <ImageButton
-                    android:id="@+id/toolbar_icon_burger"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="icon burger"
-                    android:src="@drawable/icon_toolbar_burger"
-                    android:background="@color/black"
-                    android:layout_marginStart="16dp"
-                    android:layout_gravity="start"/>
                 <TextView
                     android:id="@+id/toolbar_title"
                     android:layout_width="match_parent"

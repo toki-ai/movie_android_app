@@ -36,7 +36,7 @@ public class MovieViewModel extends ViewModel {
     private final RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase;
     private final SettingPreference settingPreference;
 
-    private final CompletableSubject refreshTrigger = CompletableSubject.create();
+    private final BehaviorSubject<String> categorySubject = BehaviorSubject.createDefault("popular");
 
     @Inject
     public MovieViewModel(GetMoviesPagedUseCase getMoviesPagedUseCase,
@@ -48,30 +48,24 @@ public class MovieViewModel extends ViewModel {
         this.removeFavoriteMovieUseCase = removeFavoriteMovieUseCase;
         this.settingPreference = settingPreference;
 
-        moviesFlowable = refreshTrigger
-                .toFlowable() // Convert Completable to Flowable
-                .switchMap(ignored -> getMoviesPagedUseCase.execute(settingPreference.getCategory()))
+        moviesFlowable = categorySubject
+                .toFlowable(BackpressureStrategy.LATEST)
+                .switchMap(category -> {
+                    Log.d("MovieViewModel", "Executing getMoviesPagedUseCase with category: " + category);
+                    return getMoviesPagedUseCase.execute(category);
+                })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
-
-        PagingRx.cachedIn(moviesFlowable, ViewModelKt.getViewModelScope(this));
-
-        refreshMovies(); // Trigger initial load
     }
 
     public void refreshMovies() {
-        refreshTrigger.onComplete(); // Signal refresh without a value
+        categorySubject.onNext(settingPreference.getCategory());
     }
-    private final MutableLiveData<Movie> favoriteChangeLiveData = new MutableLiveData<>();
-    //private final PublishSubject<Void> refreshTrigger = PublishSubject.create();
 
     public Flowable<PagingData<Movie>> getMovies() {
         return moviesFlowable;
     }
-
-//    public void refreshMovies() {
-//        refreshTrigger.onNext(null);
-//    }
+    private final MutableLiveData<Movie> favoriteChangeLiveData = new MutableLiveData<>();
 
     public void toggleFavorite(Movie movie) {
         boolean newFavoriteState = !movie.isFavorite();

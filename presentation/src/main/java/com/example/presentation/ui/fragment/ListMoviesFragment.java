@@ -12,8 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagingData;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.domain.entity.Movie;
 import com.example.presentation.MyApplication;
@@ -24,9 +26,14 @@ import com.example.presentation.ui.viewmodel.SharedViewModel;
 
 import javax.inject.Inject;
 
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+
 public class ListMoviesFragment extends Fragment {
+    private static final String TAG = "ListMoviesFragment";
+
     private FragmentListMoviesBinding binding;
     private MovieAdapter adapter;
+    private final CompositeDisposable disposables = new CompositeDisposable();
 
     @Inject
     MovieViewModel viewModel;
@@ -34,7 +41,13 @@ public class ListMoviesFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "Injecting dependencies");
         MyApplication.getAppComponent().inject(this);
+        if (viewModel == null) {
+            Log.e(TAG, "MovieViewModel is null after injection");
+        } else {
+            Log.d(TAG, "MovieViewModel injected successfully: " + viewModel);
+        }
     }
 
     @Nullable
@@ -44,6 +57,7 @@ public class ListMoviesFragment extends Fragment {
         return binding.getRoot();
     }
 
+    @SuppressLint("CheckResult")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -51,17 +65,28 @@ public class ListMoviesFragment extends Fragment {
         sharedViewModel.getIsGridLiveData().observe(getViewLifecycleOwner(), isGrid -> updateViewMode(isGrid));
 
         adapter = new MovieAdapter(false, viewModel);
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext())); // Thêm mặc định
         binding.recyclerView.setAdapter(adapter);
-        Log.d("ListMoviesFragment", "Subscribing to getMovies()");
-        viewModel.getMovies().subscribe(
-                pagingData -> {
-                    Log.d("ListMoviesFragment", "Received PagingData");
-                    adapter.submitData(getViewLifecycleOwner().getLifecycle(), pagingData);
-                },
-                throwable -> {
-                    Log.e("ListMoviesFragment", "Error: " + throwable.getMessage());
-                    Toast.makeText(requireContext(), "Error loading movies: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
-                }
+        viewModel.refreshMovies();
+        disposables.add(
+                viewModel.getMovies()
+                        .subscribe(
+                                pagingData -> {
+                                    Log.d(TAG, "Received PagingData");
+                                    adapter.submitData(getViewLifecycleOwner().getLifecycle(), pagingData);
+                                    adapter.notifyDataSetChanged();
+                                    adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                                        @Override
+                                        public void onItemRangeInserted(int positionStart, int itemCount) {
+                                            Log.d(TAG, "Page loaded with " + adapter.getItemCount() + " total items so far");
+                                        }
+                                    });
+                                },
+                                throwable -> {
+                                    Log.e(TAG, "Error: " + throwable.getMessage());
+                                    Toast.makeText(requireContext(), "Error loading movies: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
+                                }
+                        )
         );
 
         viewModel.getFavoriteChangeLiveData().observe(getViewLifecycleOwner(), changedMovie -> {
@@ -71,6 +96,7 @@ public class ListMoviesFragment extends Fragment {
             }
         });
     }
+
     private int findMoviePosition(Movie changedMovie) {
         for (int i = 0; i < adapter.getItemCount(); i++) {
             Movie movie = adapter.peek(i);
@@ -99,6 +125,7 @@ public class ListMoviesFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        disposables.clear(); // Clean up subscriptions
         binding = null;
     }
 }

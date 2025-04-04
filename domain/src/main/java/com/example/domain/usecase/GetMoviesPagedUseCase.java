@@ -1,5 +1,7 @@
 package com.example.domain.usecase;
 
+import android.util.Log;
+
 import androidx.paging.PagingData;
 
 import com.example.domain.entity.Movie;
@@ -15,6 +17,7 @@ public class GetMoviesPagedUseCase {
     }
 
     public Flowable<PagingData<Movie>> execute(String type) {
+        Log.d("KKKK", "lll");
         return movieRepository.getMovies(type);
     }
 }

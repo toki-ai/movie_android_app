@@ -1,5 +1,6 @@
 package com.example.presentation.ui.adapter;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -54,6 +55,7 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
     @NonNull
     @Override
     public MovieViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        Log.d("MovieAdapter", "onCreateViewHolder called for viewType: " + viewType);
         LayoutInflater inflater = LayoutInflater.from(parent.getContext());
         if (viewType == VIEW_TYPE_GRID) {
             ItemMovieGridBinding binding = DataBindingUtil.inflate(

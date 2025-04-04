@@ -56,6 +56,7 @@ public class MovieRepositoryImpl implements MovieRepository {
 
     @Override
     public Flowable<PagingData<Movie>> getMovies(String type) {
+        Log.d("heheh", "HEHEH");
         settingPreference.setCategory(type);
         categorySubject.onNext(type);
         return pagingDataFlowable;

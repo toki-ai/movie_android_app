@@ -3,11 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.fragment.SettingFragment">
-
-    <TextView
+    tools:context=".ui.fragment.AboutFragment">
+    <WebView
+        android:id="@+id/webView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="About fragment" />
+        android:layout_height="match_parent" />
 
 </FrameLayout>

@@ -32,6 +32,7 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
     private final MovieDtoToMovieMapper mapper;
     private final FavoriteMovieDao favoriteDao;
     private final SettingPreference settingPreference;
+    private int totalPages = 0; // Biến instance để lưu totalPages
 
     public MoviePagingSource(MovieApiService apiService, String apiKey,
                              FavoriteMovieDao favoriteDao, SettingPreference settingPreference) {
@@ -40,24 +41,24 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
         this.favoriteDao = favoriteDao;
         this.mapper = new MovieDtoToMovieMapper();
         this.settingPreference = settingPreference;
-        Log.d("TAGTAG", "HEHE");
     }
 
     @NonNull
     @Override
     public Single<LoadResult<Integer, Movie>> loadSingle(@NonNull LoadParams<Integer> params) {
-        Integer nextPageNumber = params.getKey();
-        if (nextPageNumber == null) {
-            nextPageNumber = 1;
+        Integer currentPage = params.getKey();
+        if (currentPage == null) {
+            currentPage = 1;
         }
 
-        Log.d(TAG, "loadSingle called for page: " + nextPageNumber);
-        return loadMoviesForPage(nextPageNumber)
+        Log.d(TAG, "Loading page: " + currentPage);
+        Integer finalCurrentPage = currentPage;
+        Integer finalCurrentPage1 = currentPage;
+        return loadMoviesForPage(currentPage)
                 .subscribeOn(Schedulers.io())
-                .map(this::toLoadResult)
-                .doOnSuccess(result -> Log.d(TAG, "LoadResult created: " + (result instanceof LoadResult.Page ? "Page" : "Error")))
+                .map(movies -> toLoadResult(movies, finalCurrentPage))
                 .onErrorReturn(throwable -> {
-                    Log.e(TAG, "Error in loadSingle: " + throwable.getMessage());
+                    Log.e(TAG, "Error loading page " + finalCurrentPage1 + ": " + throwable.getMessage());
                     return new LoadResult.Error(throwable);
                 });
     }
@@ -67,8 +68,8 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
         Log.d(TAG, "Loading movies for page " + page + ", category: " + category);
         return apiService.getMoviesByCategory(category, apiKey, page)
                 .flatMap(response -> {
-                    int apiElementCount = response.getMovies().size();
-                    Log.d(TAG, "Page " + page + ": API returned " + apiElementCount + " elements");
+                    totalPages = response.getTotalPages(); // Lưu totalPages vào biến instance
+                    Log.d(TAG, "Page " + page + ": API returned " + response.getMovies().size() + " movies, total pages: " + totalPages);
                     return favoriteDao.getFavoriteMovies()
                             .map(favorites -> {
                                 List<Integer> favoriteIds = favorites.stream()
@@ -76,18 +77,17 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
                                         .collect(Collectors.toList());
 
                                 return response.getMovies().stream()
-                                        .map(dto -> {
-                                            boolean isFavorite = favoriteIds.contains(dto.getId());
-                                            return mapper.map(dto, isFavorite);
-                                        })
+                                        .map(dto -> mapper.map(dto, favoriteIds.contains(dto.getId())))
                                         .collect(Collectors.toList());
                             });
                 });
     }
 
-    private LoadResult<Integer, Movie> toLoadResult(@NonNull List<Movie> movies) {
-        Integer prevKey = null;
-        Integer nextKey = movies.isEmpty() ? null : 1;
+    private LoadResult<Integer, Movie> toLoadResult(@NonNull List<Movie> movies, int currentPage) {
+        Integer prevKey = currentPage > 1 ? currentPage - 1 : null;
+        Integer nextKey = currentPage < totalPages ? currentPage + 1 : null;
+
+        Log.d(TAG, "Page " + currentPage + ": Loaded " + movies.size() + " movies, prevKey: " + prevKey + ", nextKey: " + nextKey);
         return new LoadResult.Page(
                 movies, prevKey, nextKey,
                 LoadResult.Page.COUNT_UNDEFINED, LoadResult.Page.COUNT_UNDEFINED
@@ -96,7 +96,23 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
 
     @Nullable
     @Override
-    public Integer getRefreshKey(@NonNull PagingState<Integer, Movie> pagingState) {
+    public Integer getRefreshKey(@NonNull PagingState<Integer, Movie> state) {
+        Integer anchorPosition = state.getAnchorPosition();
+        if (anchorPosition == null) {
+            return null;
+        }
+        LoadResult.Page<Integer, Movie> anchorPage = state.closestPageToPosition(anchorPosition);
+        if (anchorPage == null) {
+            return null;
+        }
+        Integer prevKey = anchorPage.getPrevKey();
+        if (prevKey != null) {
+            return prevKey + 1;
+        }
+        Integer nextKey = anchorPage.getNextKey();
+        if (nextKey != null) {
+            return nextKey - 1;
+        }
         return null;
     }
 }

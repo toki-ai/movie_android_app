@@ -1,5 +1,7 @@
 package com.example.domain.usecase;
 
+import android.util.Log;
+
 import com.example.domain.entity.Movie;
 import com.example.domain.repository.MovieRepository;
 import io.reactivex.rxjava3.core.Single;
