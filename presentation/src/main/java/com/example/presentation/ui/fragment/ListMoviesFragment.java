@@ -20,22 +20,21 @@ import com.example.presentation.MyApplication;
 import com.example.presentation.databinding.FragmentListMoviesBinding;
 import com.example.presentation.ui.adapter.MovieAdapter;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
+import com.example.presentation.ui.viewmodel.SharedViewModel;
 
 import javax.inject.Inject;
 
 public class ListMoviesFragment extends Fragment {
     private FragmentListMoviesBinding binding;
     private MovieAdapter adapter;
-    private MovieViewModel viewModel;
 
     @Inject
-    ViewModelProvider.Factory viewModelFactory;
+    MovieViewModel viewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((MyApplication) requireActivity().getApplication()).getAppComponent().inject(this);
-        viewModel = new ViewModelProvider(this, viewModelFactory).get(MovieViewModel.class);
+        MyApplication.getAppComponent().inject(this);
     }
 
     @Nullable
@@ -45,19 +44,22 @@ public class ListMoviesFragment extends Fragment {
         return binding.getRoot();
     }
 
-    @SuppressLint("CheckResult")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        SharedViewModel sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+        sharedViewModel.getIsGridLiveData().observe(getViewLifecycleOwner(), isGrid -> updateViewMode(isGrid));
 
         adapter = new MovieAdapter(false, viewModel);
         binding.recyclerView.setAdapter(adapter);
-
-        updateLayoutManager();
-
+        Log.d("ListMoviesFragment", "Subscribing to getMovies()");
         viewModel.getMovies().subscribe(
-                pagingData -> adapter.submitData(getViewLifecycleOwner().getLifecycle(), pagingData),
+                pagingData -> {
+                    Log.d("ListMoviesFragment", "Received PagingData");
+                    adapter.submitData(getViewLifecycleOwner().getLifecycle(), pagingData);
+                },
                 throwable -> {
+                    Log.e("ListMoviesFragment", "Error: " + throwable.getMessage());
                     Toast.makeText(requireContext(), "Error loading movies: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
                 }
         );
@@ -69,7 +71,6 @@ public class ListMoviesFragment extends Fragment {
             }
         });
     }
-
     private int findMoviePosition(Movie changedMovie) {
         for (int i = 0; i < adapter.getItemCount(); i++) {
             Movie movie = adapter.peek(i);

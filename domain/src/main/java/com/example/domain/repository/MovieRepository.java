@@ -1,6 +1,8 @@
 package com.example.domain.repository;
 
 import com.example.domain.entity.Movie;
+
+import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import androidx.paging.PagingData;
@@ -12,4 +14,10 @@ public interface MovieRepository {
     Single<List<Movie>> getFavoriteMovies();
     Single<Void> addToFavorites(Movie movie);
     Single<Void> removeFromFavorites(Movie movie);
+
+    //Completable addMovieToFavorite(Movie movie);
+    //
+    //    Completable deleteMovieById(int movieId);
+    //
+    //    Single<Boolean> isFavoriteMovie(int movieId);
 }

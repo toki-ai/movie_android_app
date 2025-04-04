@@ -22,18 +22,18 @@ import javax.inject.Inject;
 public class FavoriteFragment extends Fragment {
     private FragmentFavoriteBinding binding;
     private MovieAdapter adapter;
-    private FavoriteViewModel favoriteViewModel;
-    private MovieViewModel movieViewModel;
 
     @Inject
-    ViewModelProvider.Factory viewModelFactory;
+    FavoriteViewModel favoriteViewModel;
+
+    @Inject
+    MovieViewModel movieViewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ((MyApplication) requireActivity().getApplication()).getAppComponent().inject(this);
-        favoriteViewModel = new ViewModelProvider(this, viewModelFactory).get(FavoriteViewModel.class);
-        movieViewModel = new ViewModelProvider(this, viewModelFactory).get(MovieViewModel.class);
+        MyApplication.getAppComponent().inject(this);
+
     }
 
     @Nullable
@@ -46,7 +46,6 @@ public class FavoriteFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         adapter = new MovieAdapter(false, movieViewModel);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
         binding.recyclerView.setAdapter(adapter);

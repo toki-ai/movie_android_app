@@ -13,15 +13,14 @@ pluginManagement {
 }
 
 dependencyResolutionManagement {
-    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS) // Giữ nguyên chế độ này
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()        // Repository cho AndroidX, Google libraries
-        mavenCentral()  // Repository cho các thư viện khác
+        google()
+        mavenCentral()
     }
 }
 
 rootProject.name = "MockProject"
-include ':app'
 include ':domain'
 include ':data'
 include ':presentation'

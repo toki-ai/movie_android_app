@@ -1,6 +1,7 @@
 package com.example.data.repository;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.paging.Pager;
 import androidx.paging.PagingConfig;
@@ -44,6 +45,7 @@ public class MovieRepositoryImpl implements MovieRepository {
         pagingDataFlowable = categorySubject
                 .toFlowable(BackpressureStrategy.LATEST)
                 .switchMap(category -> {
+                    Log.d("MovieRepository", "SwitchMap triggered for category: " + category);
                     Pager<Integer, Movie> pager = new Pager<>(
                             new PagingConfig(20),
                             () -> new MoviePagingSource(apiService, apiKey, favoriteDao, settingPreference)

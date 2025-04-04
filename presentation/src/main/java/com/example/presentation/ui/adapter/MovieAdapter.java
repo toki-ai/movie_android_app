@@ -39,7 +39,7 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
 
     public void toggleViewMode() {
         isGridMode = !isGridMode;
-        notifyDataSetChanged(); // Thông báo rằng tất cả các item cần được làm mới
+        notifyDataSetChanged();
     }
 
     public boolean isGridMode() {

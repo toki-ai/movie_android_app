@@ -1,1 +1,4 @@
-<resources></resources>
+<resources>
+    <string name="nav_open">open</string>
+    <string name="nav_close">close</string>
+</resources>

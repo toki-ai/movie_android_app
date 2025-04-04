@@ -14,9 +14,12 @@ import com.example.data.preference.SettingPreference;
 import com.example.presentation.R;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 
+import javax.inject.Inject;
+
 public class SettingFragment extends PreferenceFragmentCompat implements SharedPreferences.OnSharedPreferenceChangeListener {
     private SettingPreference settingPreference;
-    private MovieViewModel movieViewModel;
+    @Inject
+    MovieViewModel movieViewModel;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -24,7 +27,6 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
 
         // Khởi tạo các Preference và đặt giá trị ban đầu từ SettingPreference
         settingPreference = new SettingPreference(requireContext());
-        movieViewModel = new ViewModelProvider(requireActivity()).get(MovieViewModel.class);
 
         // Đặt giá trị ban đầu cho các Preference
         ListPreference categoryPref = findPreference("category");
@@ -78,29 +80,29 @@ public class SettingFragment extends PreferenceFragmentCompat implements SharedP
             case "category":
                 String category = sharedPreferences.getString(key, "popular");
                 settingPreference.setCategory(category);
-                movieViewModel.refreshMovies();
+                //movieViewModel.refreshMovies();
                 break;
             case "sort_by":
                 String sortBy = sharedPreferences.getString(key, "rating");
                 settingPreference.setSortBy(sortBy);
-                movieViewModel.refreshMovies();
+                //movieViewModel.refreshMovies();
                 break;
             case "min_year":
             case "max_year":
                 int minYear = sharedPreferences.getInt("min_year", 1900);
                 int maxYear = sharedPreferences.getInt("max_year", 2024);
                 settingPreference.setYearRange(minYear, maxYear);
-                movieViewModel.refreshMovies();
+                //movieViewModel.refreshMovies();
                 break;
             case "min_rating":
                 int minRating = sharedPreferences.getInt(key, 0);
                 settingPreference.setMinRating(minRating);
-                movieViewModel.refreshMovies();
+                //movieViewModel.refreshMovies();
                 break;
             case "pages_per_load":
                 int pagesPerLoad = sharedPreferences.getInt(key, 1);
                 settingPreference.setPagesPerLoad(pagesPerLoad);
-                movieViewModel.refreshMovies();
+                //movieViewModel.refreshMovies();
                 break;
         }
     }

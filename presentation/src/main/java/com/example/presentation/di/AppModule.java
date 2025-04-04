@@ -1,10 +1,6 @@
 package com.example.presentation.di;
 
 import android.content.Context;
-
-import androidx.lifecycle.ViewModel;
-import androidx.lifecycle.ViewModelProvider;
-
 import com.example.data.preference.SettingPreference;
 import com.example.data.repository.MovieRepositoryImpl;
 import com.example.data.repository.UserRepositoryImpl;
@@ -23,14 +19,9 @@ import com.example.domain.usecase.SaveUserUseCase;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
-import com.example.presentation.util.ViewModelFactory;
 import com.example.presentation.util.ViewModelKey;
 
-import java.util.Map;
-
-import javax.inject.Provider;
 import javax.inject.Singleton;
-
 import dagger.Module;
 import dagger.Provides;
 import dagger.multibindings.IntoMap;
@@ -130,32 +121,34 @@ public class AppModule {
     @Singleton
     @IntoMap
     @ViewModelKey(MovieViewModel.class)
-    public MovieViewModel provideMovieViewModel(GetMoviesPagedUseCase getMoviesPagedUseCase,
-                                                AddFavoriteMovieUseCase addFavoriteMovieUseCase,
-                                                RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase,
-                                                SettingPreference settingPreference) {
-        return new MovieViewModel(getMoviesPagedUseCase, addFavoriteMovieUseCase, removeFavoriteMovieUseCase, settingPreference);
+    public MovieViewModel provideMovieViewModel(
+            GetMoviesPagedUseCase getMoviesPagedUseCase,
+            AddFavoriteMovieUseCase addFavoriteMovieUseCase,
+            RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase,
+            SettingPreference settingPreference
+    ) {
+        return new MovieViewModel(
+                getMoviesPagedUseCase,
+                addFavoriteMovieUseCase,
+                removeFavoriteMovieUseCase,
+                settingPreference
+        );
     }
 
     @Provides
     @Singleton
     @IntoMap
     @ViewModelKey(FavoriteViewModel.class)
-    ViewModel provideFavoriteViewModel(GetFavoriteMoviesUseCase useCase, RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase) {
+    public FavoriteViewModel provideFavoriteViewModel(GetFavoriteMoviesUseCase useCase, RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase) {
         return new FavoriteViewModel(useCase, removeFavoriteMovieUseCase);
     }
 
     @Provides
+    @Singleton
     @IntoMap
     @ViewModelKey(UserViewModel.class)
-    ViewModel provideUserViewModel(GetUserUseCase getUserUseCase, SaveUserUseCase saveUserUseCase) {
+    public UserViewModel provideUserViewModel(GetUserUseCase getUserUseCase, SaveUserUseCase saveUserUseCase) {
         return new UserViewModel(getUserUseCase, saveUserUseCase);
-    }
-
-    @Provides
-    @Singleton
-    ViewModelProvider.Factory provideViewModelFactory(Map<Class<? extends ViewModel>, Provider<ViewModel>> viewModels) {
-        return new ViewModelFactory(viewModels);
     }
 
     @Provides
@@ -176,5 +169,11 @@ public class AppModule {
     @Provides
     SaveUserUseCase provideSaveUserUseCase(UserRepository repository) {
         return new SaveUserUseCase(repository);
+    }
+
+    @Provides
+    @Singleton
+    public SettingPreference provideSettingPreference(Context context) {
+        return new SettingPreference(context);
     }
 }

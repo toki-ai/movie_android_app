@@ -9,6 +9,9 @@ import com.example.presentation.ui.fragment.AboutFragment;
 import com.example.presentation.ui.fragment.FavoriteFragment;
 import com.example.presentation.ui.fragment.ListMoviesFragment;
 import com.example.presentation.ui.fragment.SettingFragment;
+import com.example.presentation.ui.viewmodel.FavoriteViewModel;
+import com.example.presentation.ui.viewmodel.MovieViewModel;
+import com.example.presentation.ui.viewmodel.UserViewModel;
 
 import dagger.Component;
 import javax.inject.Singleton;
@@ -25,4 +28,9 @@ public interface AppComponent {
     UserRepository userRepository();
     GetUserUseCase getUserUseCase();
     SaveUserUseCase saveUserUseCase();
+    void inject(MovieViewModel movieViewModel);
+
+    void inject(FavoriteViewModel favoriteViewModel);
+
+    void inject(UserViewModel userViewModel);
 }

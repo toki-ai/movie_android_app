@@ -10,7 +10,10 @@ import androidx.lifecycle.ViewModel;
 import com.example.domain.entity.User;
 import com.example.domain.usecase.GetUserUseCase;
 import com.example.domain.usecase.SaveUserUseCase;
+import com.example.presentation.MyApplication;
 import com.example.presentation.ui.model.UserProfile;
+
+import javax.inject.Inject;
 
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -30,10 +33,10 @@ public class UserViewModel extends ViewModel {
 
     private final UserProfile userProfile = new UserProfile();
 
+    @Inject
     public UserViewModel(GetUserUseCase getUserUseCase, SaveUserUseCase saveUserUseCase) {
         this.getUserUseCase = getUserUseCase;
         this.saveUserUseCase = saveUserUseCase;
-        loadUser();
     }
 
     @SuppressLint("CheckResult")
