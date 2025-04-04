@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="Filter Settings"
+        android:key="filter_category">
+
+        <ListPreference
+            android:key="category"
+            android:title="Category"
+            android:summary="Select movie category"
+            android:entries="@array/category_entries"
+            android:entryValues="@array/category_values"
+            android:defaultValue="popular" />
+
+        <SeekBarPreference
+            android:key="min_year"
+            android:title="Minimum Year"
+            android:summary="Select minimum release year"
+            android:defaultValue="1900"
+            android:max="2024"
+            android:min="1900" />
+
+        <SeekBarPreference
+            android:key="max_year"
+            android:title="Maximum Year"
+            android:summary="Select maximum release year"
+            android:defaultValue="2024"
+            android:max="2024"
+            android:min="1900" />
+
+        <SeekBarPreference
+            android:key="min_rating"
+            android:title="Minimum Rating"
+            android:summary="Select minimum rating"
+            android:defaultValue="0"
+            android:max="10"
+            android:min="0" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Sort Settings"
+        android:key="sort_category">
+
+        <ListPreference
+            android:key="sort_by"
+            android:title="Sort By"
+            android:summary="Select sorting method"
+            android:entries="@array/sort_entries"
+            android:entryValues="@array/sort_values"
+            android:defaultValue="rating" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Loading Settings"
+        android:key="loading_category">
+
+        <SeekBarPreference
+            android:key="pages_per_load"
+            android:title="Pages Per Load"
+            android:summary="Select number of pages to load"
+            android:defaultValue="1"
+            android:max="5"
+            android:min="1" />
+    </PreferenceCategory>
+
+</PreferenceScreen>

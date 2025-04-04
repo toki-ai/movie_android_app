@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="categories">
+        <item>popular</item>
+        <item>top_rated</item>
+        <item>upcoming</item>
+        <item>now_playing</item>
+    </string-array>
+
+    <string-array name="category_entries">
+        <item>Popular</item>
+        <item>Top Rated</item>
+        <item>Upcoming</item>
+    </string-array>
+    <string-array name="category_values">
+        <item>popular</item>
+        <item>top_rated</item>
+        <item>upcoming</item>
+    </string-array>
+
+    <string-array name="sort_entries">
+        <item>Rating</item>
+        <item>Release Year</item>
+    </string-array>
+    <string-array name="sort_values">
+        <item>rating</item>
+        <item>year</item>
+    </string-array>
+</resources>

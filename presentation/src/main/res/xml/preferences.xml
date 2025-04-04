@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <ListPreference
+        android:key="category"
+        android:title="Category"
+        android:summary="Select movie category"
+        android:entries="@array/categories"
+        android:entryValues="@array/category_values"
+        android:defaultValue="popular"
+        app:useSimpleSummaryProvider="true"/>
+
+    <ListPreference
+        android:key="sort_by"
+        android:title="Sort By"
+        android:summary="Select sorting method"
+        android:entries="@array/sort_entries"
+        android:entryValues="@array/sort_values"
+        android:defaultValue="rating"
+        app:useSimpleSummaryProvider="true"/>
+
+    <PreferenceCategory android:title="Filter">
+
+        <SeekBarPreference
+            android:key="min_year"
+            android:title="Minimum Year"
+            android:summary="Set minimum release year"
+            android:defaultValue="1900"
+            android:max="2024"
+            app:showSeekBarValue="true"/>
+
+        <SeekBarPreference
+            android:key="max_year"
+            android:title="Maximum Year"
+            android:summary="Set maximum release year"
+            android:defaultValue="2024"
+            android:max="2024"
+            app:showSeekBarValue="true"/>
+
+        <SeekBarPreference
+            android:key="min_rating"
+            android:title="Minimum Rating"
+            android:summary="Set minimum rating"
+            android:defaultValue="0"
+            android:max="10"
+            app:showSeekBarValue="true"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="Loading">
+
+        <SeekBarPreference
+            android:key="pages_per_load"
+            android:title="Pages Per Load"
+            android:summary="Set number of pages to load at once"
+            android:defaultValue="1"
+            android:max="5"
+            app:showSeekBarValue="true"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen> 
