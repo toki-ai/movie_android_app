@@ -43,11 +43,6 @@ public class ListMoviesFragment extends Fragment {
         super.onCreate(savedInstanceState);
         Log.d(TAG, "Injecting dependencies");
         MyApplication.getAppComponent().inject(this);
-        if (viewModel == null) {
-            Log.e(TAG, "MovieViewModel is null after injection");
-        } else {
-            Log.d(TAG, "MovieViewModel injected successfully: " + viewModel);
-        }
     }
 
     @Nullable
@@ -119,7 +114,7 @@ public class ListMoviesFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        disposables.clear(); // Clean up subscriptions
+        disposables.clear();
         binding = null;
     }
 }

@@ -12,18 +12,19 @@ import com.example.domain.repository.MovieRepository;
 import com.example.domain.repository.UserRepository;
 import com.example.domain.usecase.AddFavoriteMovieUseCase;
 import com.example.domain.usecase.GetFavoriteMoviesUseCase;
+import com.example.domain.usecase.GetMovieDetailUseCase;
 import com.example.domain.usecase.GetMoviesPagedUseCase;
 import com.example.domain.usecase.GetUserUseCase;
 import com.example.domain.usecase.RemoveFavoriteMovieUseCase;
 import com.example.domain.usecase.SaveUserUseCase;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
+import com.example.presentation.ui.viewmodel.MovieDetailViewModel;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
 
 import javax.inject.Singleton;
 import dagger.Module;
 import dagger.Provides;
-import dagger.multibindings.IntoMap;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava3.RxJava3CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -90,6 +91,12 @@ public class AppModule {
 
     @Provides
     @Singleton
+    GetMovieDetailUseCase provideGetMovieDetailUseCase(MovieRepository repository){
+        return new GetMovieDetailUseCase(repository);
+    }
+
+    @Provides
+    @Singleton
     GetFavoriteMoviesUseCase provideGetFavoriteMoviesUseCase(MovieRepository repository) {
         return new GetFavoriteMoviesUseCase(repository);
     }
@@ -120,6 +127,12 @@ public class AppModule {
                 removeFavoriteMovieUseCase,
                 settingPreference
         );
+    }
+
+    @Provides
+    @Singleton
+    public MovieDetailViewModel provideMovieDetailViewModel(GetMovieDetailUseCase getMovieDetailUseCase) {
+        return new MovieDetailViewModel(getMovieDetailUseCase);
     }
 
     @Provides

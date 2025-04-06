@@ -1,5 +1,6 @@
 package com.example.presentation.ui.adapter;
 
+import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
@@ -100,8 +101,16 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
             this.listBinding = binding;
 
             itemView.setOnClickListener(v -> {
-                if (navController != null) {
-                    navController.navigate(fragmentType.equals(TYPE.List) ? R.id.action_listMoviesFragment_to_movieDetailFragment : R.id.action_favoriteFragment_to_movieDetailFragment);
+                Movie movie = getItem(getBindingAdapterPosition());
+                if (movie != null && navController != null) {
+                    Bundle args = new Bundle();
+                    args.putInt("arg_movie_id", movie.getId());
+                    args.putString("arg_movie_title", movie.getTitle());
+
+                    int actionId = (fragmentType == TYPE.List)
+                            ? R.id.action_listMoviesFragment_to_movieDetailFragment
+                            : R.id.action_favoriteFragment_to_movieDetailFragment;
+                    navController.navigate(actionId, args);
                 }
             });
         }

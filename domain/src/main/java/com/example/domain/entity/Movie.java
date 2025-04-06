@@ -3,6 +3,7 @@ package com.example.domain.entity;
 
 import com.example.domain.utils.Constants;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Movie {
@@ -15,6 +16,7 @@ public class Movie {
     private String backdropPath;
     private boolean adult;
     private boolean isFavorite;
+    private List<CastCrew> credits;
 
     public Movie() {}
 
@@ -28,6 +30,19 @@ public class Movie {
         this.posterPath = posterPath;
         this.adult = adult;
         this.isFavorite = isFavorite;
+    }
+
+    public Movie(int id, String title, String overview, String releaseDate, double voteAverage, String backdropPath, String posterPath, boolean adult, boolean isFavorite, List<CastCrew> credits) {
+        this.id = id;
+        this.title = title;
+        this.overview = overview;
+        this.releaseDate = releaseDate;
+        this.voteAverage = voteAverage;
+        this.backdropPath = backdropPath;
+        this.posterPath = posterPath;
+        this.adult = adult;
+        this.isFavorite = isFavorite;
+        this.credits = credits;
     }
     public String getPosterPathUrl() {
         return Constants.IMAGE_BASE_URL + posterPath;
@@ -111,6 +126,14 @@ public class Movie {
 
     public void setFavorite(boolean favorite) {
         isFavorite = favorite;
+    }
+
+    public List<CastCrew> getCredits() {
+        return credits;
+    }
+
+    public void setCredits(List<CastCrew> credits) {
+        this.credits = credits;
     }
 
     @Override

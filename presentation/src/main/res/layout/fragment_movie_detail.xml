@@ -1,14 +1,191 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.fragment.MovieDetailFragment">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <data>
+        <import type="android.view.View"/>
+        <variable
+            name="movie"
+            type="com.example.domain.entity.Movie" />
+        <variable
+            name="viewModel"
+            type="com.example.presentation.ui.viewmodel.MovieDetailViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/clRoot"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
+        android:layout_height="wrap_content"
+        android:padding="16dp">
 
-</FrameLayout>
+        <ImageView
+            android:id="@+id/detail_poster"
+            android:layout_width="120dp"
+            android:layout_height="150dp"
+            android:adjustViewBounds="true"
+            android:scaleType="centerCrop"
+            app:imageUrl="@{movie.posterPathUrl}"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/detail_btn_reminder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/shape_button"
+            android:paddingHorizontal="10dp"
+            android:paddingVertical="5dp"
+            android:text="Reminder"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="@+id/detail_poster"
+            app:layout_constraintStart_toStartOf="@+id/detail_poster"
+            app:layout_constraintTop_toBottomOf="@+id/detail_poster"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/detail_reminder_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textSize="12sp"
+            android:text="No reminder set"
+            app:layout_constraintStart_toStartOf="@+id/detail_btn_reminder"
+            app:layout_constraintTop_toBottomOf="@+id/detail_btn_reminder" />
+
+        <TextView
+            android:id="@+id/detail_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{movie.title}"
+            android:layout_marginStart="10dp"
+            android:textColor="@color/slash_bg"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/detail_poster"
+            app:layout_constraintTop_toTopOf="@+id/detail_poster"
+            android:layout_marginTop="10dp" />
+
+        <ImageView
+            android:id="@+id/detail_btn_fav"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:scaleType="centerCrop"
+            android:layout_marginStart="10dp"
+            android:src="@{movie.isFavorite ? @drawable/ystart : @drawable/start}"
+
+            app:layout_constraintStart_toEndOf="@+id/detail_title"
+            app:layout_constraintTop_toTopOf="@+id/detail_poster" />
+<!--        android:onClick="@{() -> viewModel.toggleFavorite(movie, 1)}"-->
+
+        <ImageView
+            android:id="@+id/detail_adult_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_marginTop="8dp"
+            android:src="@drawable/icon_18"
+            android:visibility="@{movie.adult ? View.VISIBLE : View.GONE}"
+            app:layout_constraintStart_toEndOf="@id/detail_btn_fav"
+            app:layout_constraintTop_toTopOf="@id/detail_poster" />
+
+        <TextView
+            android:id="@+id/detail_release_heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="20dp"
+            android:text="Release date:"
+            android:textColor="@color/pink"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toEndOf="@+id/detail_poster"
+            app:layout_constraintTop_toBottomOf="@+id/detail_btn_fav" />
+
+        <TextView
+            android:id="@+id/detail_releaseDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{movie.releaseDate}"
+            android:textSize="14sp"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@+id/detail_release_heading"
+            app:layout_constraintTop_toTopOf="@+id/detail_release_heading" />
+
+        <TextView
+            android:id="@+id/detail_rating_heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:text="Rating:"
+            android:textColor="@color/pink"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/detail_release_heading"
+            app:layout_constraintTop_toBottomOf="@+id/detail_release_heading" />
+
+        <TextView
+            android:id="@+id/detail_rating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@{movie.voteAverage + `/10.0`}"
+            android:textSize="14sp"
+            android:layout_marginStart="10dp"
+            app:layout_constraintStart_toEndOf="@+id/detail_rating_heading"
+            app:layout_constraintTop_toTopOf="@+id/detail_rating_heading" />
+
+        <TextView
+            android:id="@+id/detail_overview_heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Overview:"
+            android:textColor="@color/pink"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/detail_poster"
+            app:layout_constraintTop_toBottomOf="@+id/detail_reminder_info" />
+
+        <ScrollView
+            android:id="@+id/detail_scroll_view"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintStart_toStartOf="@+id/detail_overview_heading"
+            app:layout_constraintTop_toBottomOf="@+id/detail_overview_heading">
+
+            <TextView
+                android:id="@+id/detail_overview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@{movie.overview}"
+                android:textSize="14sp" />
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/detail_crew_heading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="Cast and Crew"
+            android:textColor="@color/pink"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@+id/detail_scroll_view"
+            app:layout_constraintTop_toBottomOf="@+id/detail_scroll_view" />
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/detail_crew_heading">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/detail_crew_list"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:paddingBottom="4dp" />
+        </androidx.cardview.widget.CardView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>

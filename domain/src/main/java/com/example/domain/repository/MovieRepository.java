@@ -15,6 +15,7 @@ public interface MovieRepository {
     Completable addToFavorites(Movie movie);
     Completable removeFromFavorites(Movie movie);
 
+    Single<Movie> getMovieDetail(int movieId);
     //Completable addMovieToFavorite(Movie movie);
     //
     //    Completable deleteMovieById(int movieId);

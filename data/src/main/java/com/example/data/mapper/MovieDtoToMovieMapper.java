@@ -1,7 +1,10 @@
 package com.example.data.mapper;
 
 import com.example.data.source.remote.model.MovieDto;
+import com.example.domain.entity.CastCrew;
 import com.example.domain.entity.Movie;
+
+import java.util.List;
 
 public class MovieDtoToMovieMapper {
     public Movie map(MovieDto dto, boolean isFavorite) {
@@ -17,6 +20,21 @@ public class MovieDtoToMovieMapper {
                 dto.getPosterPath(),
                 dto.isAdult(),
                 isFavorite
+        );
+    }
+
+    public Movie mapDetail(MovieDto dto, boolean isFavorite, List<CastCrew> credits) {
+        return new Movie(
+                dto.getId(),
+                dto.getTitle(),
+                dto.getOverview(),
+                dto.getReleaseDate(),
+                dto.getVoteAverage(),
+                dto.getBackdropPath(),
+                dto.getPosterPath(),
+                dto.isAdult(),
+                isFavorite,
+                credits
         );
     }
 }
