@@ -10,9 +10,11 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.presentation.databinding.FragmentMovieDetailBinding;
 import com.example.presentation.di.MyApplication;
+import com.example.presentation.ui.adapter.CastCrewAdapter;
 import com.example.presentation.ui.viewmodel.MovieDetailViewModel;
 
 import javax.inject.Inject;
@@ -24,6 +26,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class MovieDetailFragment extends Fragment {
     private FragmentMovieDetailBinding binding;
     private final CompositeDisposable disposables = new CompositeDisposable();
+    private CastCrewAdapter castCrewAdapter;
 
     @Inject
     MovieDetailViewModel viewModel;
@@ -44,6 +47,9 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        castCrewAdapter = new CastCrewAdapter();
+        binding.detailCrewList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        binding.detailCrewList.setAdapter(castCrewAdapter);
 
         Bundle args = getArguments();
         if (args != null) {
@@ -57,7 +63,8 @@ public class MovieDetailFragment extends Fragment {
                             .subscribe(
                                     movie -> {
                                         binding.setMovie(movie);
-                                        //castCrewAdapter.submitList(movie.getCastCrew());
+                                        Log.d("TAGTAG", String.valueOf(movie.getCredits().size()));
+                                        castCrewAdapter.submitList(movie.getCredits());
                                     },
                                     throwable -> {
                                         Log.e("Movie Detail", "Error: " + throwable.getMessage());
