@@ -26,6 +26,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
     private final ReminderViewModel viewModel;
     private final NavController navController;
     private final View navigationView;
+    private int maxItems = Integer.MAX_VALUE;
 
     public ReminderAdapter(ReminderViewModel viewModel, View navigationView, NavController navController) {
         this.viewModel = viewModel;
@@ -50,9 +51,14 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         holder.bind(reminders.get(position));
     }
 
+    public void setMaxItems(int maxItems) {
+        this.maxItems = maxItems;
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getItemCount() {
-        return reminders.size();
+        return Math.min(reminders.size(), maxItems);
     }
 
     class ReminderViewHolder extends RecyclerView.ViewHolder {
@@ -81,6 +87,12 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
                     .placeholder(R.drawable.img_slash_bg)
                     .error(R.drawable.img_slash_bg)
                     .into(binding.posterImageView);
+
+            if (maxItems == 2) {
+                binding.deleteButton.setVisibility(View.GONE);
+            } else {
+                binding.deleteButton.setVisibility(View.VISIBLE);
+            }
 
             binding.getRoot().setOnClickListener(v -> {
                 if (navController != null) {
