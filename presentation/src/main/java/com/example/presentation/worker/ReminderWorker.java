@@ -1,13 +1,18 @@
 package com.example.presentation.worker;
 
+import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -23,6 +28,8 @@ import java.util.Date;
 
 import javax.inject.Inject;
 
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 public class ReminderWorker extends Worker {
     private static final String CHANNEL_ID = "movie_reminder_channel";
     @Inject
@@ -33,19 +40,33 @@ public class ReminderWorker extends Worker {
         MyApplication.getAppComponent().inject(this);
     }
 
+    @SuppressLint("CheckResult")
     @NonNull
     @Override
     public Result doWork() {
-
         int movieId = getInputData().getInt("movie_id", -1);
         Log.d("ReminderWorker", "doWork called with ID: " + movieId);
         if (movieId != -1) {
             Reminder reminder = reminderViewModel.getReminderByMovieId(movieId);
-
             if (reminder != null) {
-                Log.d("ReminderWorker", "doWork called with ID: " + reminder.getPosterUrl());
+                Log.d("ReminderWorker", "Reminder found: " + reminder.getPosterUrl());
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                        ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                    Log.e("ReminderWorker", "No notification permission");
+                    return Result.failure();
+                }
                 showNotification(reminder);
-                reminderViewModel.removeReminder(reminder);
+                reminderViewModel.removeReminder(reminder)
+                        .subscribeOn(Schedulers.io())
+                        .subscribe(
+                                () -> {
+                                    Log.d("ReminderWorker", "Reminder removed successfully");
+                                    reminderViewModel.loadReminder();
+                                },
+                                throwable -> Log.e("ReminderWorker", "Error removing reminder: " + throwable.getMessage())
+                        );
+            } else {
+                Log.e("ReminderWorker", "Reminder not found for movieId: " + movieId);
             }
         }
         return Result.success();

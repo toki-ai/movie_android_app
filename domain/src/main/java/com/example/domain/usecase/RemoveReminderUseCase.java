@@ -15,6 +15,7 @@ public class RemoveReminderUseCase {
     }
 
     public Completable execute(Reminder reminder) {
+        Log.d("heheheh", "hehehe2");
         return repository.removeReminder(reminder);
     }
 }

@@ -37,7 +37,10 @@ public class ReminderRepositoryImpl implements ReminderRepository {
 
     @Override
     public Completable removeReminder(Reminder reminder) {
-        return reminderDao.deleteReminderByMovieId(reminder.getMovieId());
+        Log.d("ReminderRepo", "Deleting reminder with movieId: " + reminder.getMovieId());
+        return reminderDao.deleteReminderByMovieId(reminder.getMovieId())
+                .doOnComplete(() -> Log.d("ReminderRepo", "Deleted reminder with movieId: " + reminder.getMovieId()))
+                .doOnError(throwable -> Log.e("ReminderRepo", "Error deleting reminder: " + throwable.getMessage()));
     }
 
     @Override

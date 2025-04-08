@@ -1,6 +1,7 @@
 package com.example.presentation.ui.fragment;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,6 +41,7 @@ public class ReminderFragment extends Fragment {
         binding.reminderRecyclerView.setAdapter(adapter);
 
         reminderViewModel.getAllReminders().observe(getViewLifecycleOwner(), reminders -> {
+            Log.d("ReminderFragment", "Received " + (reminders != null ? reminders.size() : 0) + " reminders");
             adapter.setReminders(reminders);
         });
     }

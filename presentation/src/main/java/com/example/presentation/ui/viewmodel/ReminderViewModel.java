@@ -17,7 +17,6 @@ import javax.inject.Inject;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class ReminderViewModel {
@@ -46,17 +45,30 @@ public class ReminderViewModel {
         return removeReminderUseCase.execute(reminder);
     }
 
-//    public Reminder getReminderByMovieId(int id){
-//        return getAllRemindersUseCase.execute()
-//                .blockingGet().stream()
-//                .filter(r -> r.getMovieId() == id)
-//                .findFirst().orElse(null);
-//    }
+    @SuppressLint("CheckResult")
+    public void removeReminderNe(Reminder reminder) {
+        Log.d("ReminderViewModel", "Attempting to remove reminder with movieId: " + reminder.getMovieId());
+        removeReminderUseCase.execute(reminder)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .doOnComplete(() -> {
+                    Log.d("ReminderViewModel", "Successfully removed reminder with movieId: " + reminder.getMovieId());
+                    loadReminder();
+                })
+                .subscribe(
+                        () -> {},
+                        throwable -> Log.e("ReminderViewModel", "Error removing reminder: " + throwable.getMessage())
+                );
+    }
 
     public Reminder getReminderByMovieId(int movieId) {
-        return getAllReminders().getValue().stream().filter(
-                r -> r.getMovieId() == movieId
-        ).findFirst().orElse(null);
+        return getAllRemindersUseCase.execute()
+                .subscribeOn(Schedulers.io())
+                .blockingGet()
+                .stream()
+                .filter(r -> r.getMovieId() == movieId)
+                .findFirst()
+                .orElse(null);
     }
 
     @SuppressLint("CheckResult")
@@ -65,8 +77,11 @@ public class ReminderViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        reminder -> remindersLiveData.setValue(reminder),
-                        throwable -> {}
+                        reminders -> {
+                            Log.d("ReminderViewModel", "Loaded " + reminders.size() + " reminders");
+                            remindersLiveData.setValue(reminders);
+                        },
+                        throwable -> Log.e("ReminderViewModel", "Error loading reminders: " + throwable.getMessage())
                 );
     }
 

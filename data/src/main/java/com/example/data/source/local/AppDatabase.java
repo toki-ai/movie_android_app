@@ -11,7 +11,7 @@ import com.example.data.source.local.dao.ReminderDao;
 import com.example.data.source.local.entity.FavoriteMovieEntity;
 import com.example.data.source.local.entity.ReminderEntity;
 
-@Database(entities = {FavoriteMovieEntity.class, ReminderEntity.class}, version = 3, exportSchema = false)
+@Database(entities = {FavoriteMovieEntity.class, ReminderEntity.class}, version = 5, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract FavoriteMovieDao favoriteDao();
     public abstract ReminderDao reminderDao();

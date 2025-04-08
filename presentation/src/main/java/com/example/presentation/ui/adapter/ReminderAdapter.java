@@ -2,6 +2,7 @@ package com.example.presentation.ui.adapter;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,6 +14,7 @@ import com.example.domain.entity.Reminder;
 import com.example.presentation.R;
 import com.example.presentation.databinding.ItemReminderBinding;
 import com.example.presentation.ui.viewmodel.ReminderViewModel;
+import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,6 +35,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
     public void setReminders(List<Reminder> reminders) {
         this.reminders = reminders != null ? reminders : new ArrayList<>();
+        Log.d("ReminderAdapter", "Set " + this.reminders.size() + " reminders");
         notifyDataSetChanged();
     }
 
@@ -63,13 +66,21 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         @SuppressLint("CheckResult")
         void bind(Reminder reminder) {
             binding.setReminder(reminder);
-
+            binding.setViewModel(viewModel);
             String movieInfo = reminder.getMovieTitle() + " - " + reminder.getYear() + " - " + reminder.getRating();
             binding.movieInfoTextView.setText(movieInfo);
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             String reminderTime = "Reminder at: " + dateFormat.format(reminder.getReminderTime());
             binding.reminderTimeTextView.setText(reminderTime);
+
+            Picasso.get()
+                    .load(reminder.getPosterUrl())
+                    .resize(70, 90)
+                    .centerCrop()
+                    .placeholder(R.drawable.img_slash_bg)
+                    .error(R.drawable.img_slash_bg)
+                    .into(binding.posterImageView);
 
             binding.getRoot().setOnClickListener(v -> {
                 if (navController != null) {
@@ -81,28 +92,6 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
                 }
             });
 
-//            // Xử lý click nút xóa
-//            binding.deleteButton.setOnClickListener(v -> {
-//                viewModel.removeReminder(reminder)
-//                        .subscribeOn(io.reactivex.rxjava3.schedulers.Schedulers.io())
-//                        .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
-//                        .subscribe(
-//                                () -> {
-//                                    List<Reminder> currentList = viewModel.getAllReminders().getValue();
-//                                    if (currentList != null) {
-//                                        currentList = new ArrayList<>(currentList);
-//                                        currentList.remove(reminder);
-//                                        viewModel.getAllReminders().setValue(currentList); // Cập nhật LiveData trực tiếp
-//                                    }
-//                                },
-//                                throwable -> {
-//                                    // Xử lý lỗi
-//                                }
-//                        );
-//            });
-
-            // Nếu có poster, tải bằng Glide hoặc Picasso
-            // Glide.with(itemView).load(reminder.getPosterUrl()).into(binding.posterImageView);
         }
     }
 }

@@ -37,7 +37,9 @@ import com.example.presentation.ui.viewmodel.ReminderViewModel;
 import com.example.presentation.ui.viewmodel.SharedViewModel;
 import com.example.presentation.worker.ReminderWorker;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 
 import javax.inject.Inject;
 
@@ -103,6 +105,15 @@ public class MovieDetailFragment extends Fragment {
                                         binding.setMovie(movie);
                                         Log.d("TAGTAG", String.valueOf(movie.getCredits().size()));
                                         castCrewAdapter.submitList(movie.getCredits());
+
+                                        // Hiển thị Reminder nếu có
+                                        Reminder reminder = reminderViewModel.getReminderByMovieId(movieId);
+                                        if (reminder != null) {
+                                            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                                            binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(reminder.getReminderTime()));
+                                        } else {
+                                            binding.detailReminderInfo.setText("No reminder set");
+                                        }
                                     },
                                     throwable -> {
                                         Log.e("Movie Detail", "Error: " + throwable.getMessage());
@@ -120,6 +131,43 @@ public class MovieDetailFragment extends Fragment {
             });
 
             binding.detailBtnReminder.setOnClickListener(v -> showDateTimePicker(movieId));
+        }
+    }
+
+    private void setAlarmAndShowNotification() {
+        if (pendingReminder == null) return;
+        Reminder existingReminder = reminderViewModel.getReminderByMovieId(pendingReminder.getMovieId());
+        if (existingReminder != null) {
+            existingReminder.setReminderTime(pendingReminder.getReminderTime());
+            disposables.add(
+                    reminderViewModel.addReminder(existingReminder)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(() -> {
+                                Log.d("Reminder", "Updated existing reminder with movieId: " + existingReminder.getMovieId());
+                                updateWorkManager(existingReminder);
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                                binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(existingReminder.getReminderTime()));
+                                reminderViewModel.loadReminder();
+                            }, throwable -> {
+                                Log.e("Reminder", "Error updating reminder: " + throwable.getMessage());
+                            })
+            );
+        } else {
+            disposables.add(
+                    reminderViewModel.addReminder(pendingReminder)
+                            .subscribeOn(Schedulers.io())
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(() -> {
+                                Log.d("Reminder", "Added new reminder with movieId: " + pendingReminder.getMovieId());
+                                scheduleReminder(pendingReminder);
+                                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
+                                binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(pendingReminder.getReminderTime()));
+                                reminderViewModel.loadReminder();
+                            }, throwable -> {
+                                Log.e("Reminder", "Error adding reminder: " + throwable.getMessage());
+                            })
+            );
         }
     }
 
@@ -174,37 +222,6 @@ public class MovieDetailFragment extends Fragment {
             requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
         } else {
             setAlarmAndShowNotification();
-        }
-    }
-
-    private void setAlarmAndShowNotification() {
-        if (pendingReminder == null) return;
-        Reminder existingReminder = reminderViewModel.getReminderByMovieId(pendingReminder.getMovieId());
-        if (existingReminder != null) {
-            existingReminder.setReminderTime(pendingReminder.getReminderTime());
-            disposables.add(
-                    reminderViewModel.addReminder(existingReminder)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(() -> {
-                                Log.d("Reminder", "Updated existing reminder with movieId: " + existingReminder.getMovieId());
-                                updateWorkManager(existingReminder);
-                            }, throwable -> {
-                                Log.e("Reminder", "Error updating reminder: " + throwable.getMessage());
-                            })
-            );
-        } else {
-            disposables.add(
-                    reminderViewModel.addReminder(pendingReminder)
-                            .subscribeOn(Schedulers.io())
-                            .observeOn(AndroidSchedulers.mainThread())
-                            .subscribe(() -> {
-                                Log.d("Reminder", "Added new reminder with movieId: " + pendingReminder.getMovieId());
-                                scheduleReminder(pendingReminder);
-                            }, throwable -> {
-                                Log.e("Reminder", "Error adding reminder: " + throwable.getMessage());
-                            })
-            );
         }
     }
 
