@@ -18,7 +18,6 @@ import com.example.domain.usecase.GetUserUseCase;
 import com.example.domain.usecase.RemoveFavoriteMovieUseCase;
 import com.example.domain.usecase.SaveUserUseCase;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
-import com.example.presentation.ui.viewmodel.MovieDetailViewModel;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
 
@@ -119,20 +118,16 @@ public class AppModule {
             GetMoviesPagedUseCase getMoviesPagedUseCase,
             AddFavoriteMovieUseCase addFavoriteMovieUseCase,
             RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase,
+            GetMovieDetailUseCase getMovieDetailUseCase,
             SettingPreference settingPreference
     ) {
         return new MovieViewModel(
                 getMoviesPagedUseCase,
                 addFavoriteMovieUseCase,
                 removeFavoriteMovieUseCase,
+                getMovieDetailUseCase,
                 settingPreference
         );
-    }
-
-    @Provides
-    @Singleton
-    public MovieDetailViewModel provideMovieDetailViewModel(GetMovieDetailUseCase getMovieDetailUseCase) {
-        return new MovieDetailViewModel(getMovieDetailUseCase);
     }
 
     @Provides

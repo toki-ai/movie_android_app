@@ -10,12 +10,16 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.domain.entity.Movie;
+import com.example.presentation.R;
 import com.example.presentation.databinding.FragmentMovieDetailBinding;
 import com.example.presentation.di.MyApplication;
 import com.example.presentation.ui.adapter.CastCrewAdapter;
-import com.example.presentation.ui.viewmodel.MovieDetailViewModel;
+import com.example.presentation.ui.viewmodel.MovieViewModel;
+import com.example.presentation.ui.viewmodel.SharedViewModel;
 
 import javax.inject.Inject;
 
@@ -29,7 +33,7 @@ public class MovieDetailFragment extends Fragment {
     private CastCrewAdapter castCrewAdapter;
 
     @Inject
-    MovieDetailViewModel viewModel;
+    MovieViewModel viewModel;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -47,10 +51,11 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         castCrewAdapter = new CastCrewAdapter();
         binding.detailCrewList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         binding.detailCrewList.setAdapter(castCrewAdapter);
-
+        binding.setViewModel(viewModel);
         Bundle args = getArguments();
         if (args != null) {
             int movieId = args.getInt("arg_movie_id", -1);
@@ -72,22 +77,15 @@ public class MovieDetailFragment extends Fragment {
                                     }
                             )
             );
-
-//            viewModel.getMovieDetail(movieId).observe(getViewLifecycleOwner(), movie -> {
-//                if (movie != null) {
-//                    binding.setMovie(movie);
-//                    binding.favoriteButton.setText(movie.isFavorite() ? "Remove from Favorites" : "Add to Favorites");
-//                }
-//            });
-//
-//            // Xử lý nút Favorite
-//            binding.favoriteButton.setOnClickListener(v -> {
-//                viewModel.toggleFavorite(movieId);
-//                viewModel.getMovieDetail(movieId).observe(getViewLifecycleOwner(), movie -> {
-//                    binding.favoriteButton.setText(movie.isFavorite() ? "Remove from Favorites" : "Add to Favorites");
-//                });
-//            });
         }
+
+        viewModel.getFavoriteChangeLiveData().observe(getViewLifecycleOwner(), changedMovie -> {
+            Movie currentMovie = binding.getMovie();
+            if (currentMovie != null) {
+                currentMovie.setFavorite(changedMovie.isFavorite());
+                binding.setMovie(currentMovie);
+            }
+        });
     }
 
     @Override

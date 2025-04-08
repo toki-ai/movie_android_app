@@ -10,6 +10,7 @@ import androidx.paging.PagingData;
 
 import com.example.domain.entity.Movie;
 import com.example.domain.usecase.AddFavoriteMovieUseCase;
+import com.example.domain.usecase.GetMovieDetailUseCase;
 import com.example.domain.usecase.GetMoviesPagedUseCase;
 import com.example.domain.usecase.RemoveFavoriteMovieUseCase;
 import com.example.data.preference.SettingPreference;
@@ -18,6 +19,7 @@ import javax.inject.Inject;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
@@ -27,6 +29,7 @@ public class MovieViewModel extends ViewModel {
     private final GetMoviesPagedUseCase getMoviesPagedUseCase;
     private final AddFavoriteMovieUseCase addFavoriteMovieUseCase;
     private final RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase;
+    private final GetMovieDetailUseCase getMovieDetailUseCase;
     private final SettingPreference settingPreference;
 
     private final BehaviorSubject<String> categorySubject = BehaviorSubject.createDefault("popular");
@@ -35,10 +38,12 @@ public class MovieViewModel extends ViewModel {
     public MovieViewModel(GetMoviesPagedUseCase getMoviesPagedUseCase,
                           AddFavoriteMovieUseCase addFavoriteMovieUseCase,
                           RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase,
+                          GetMovieDetailUseCase getMovieDetailUseCase,
                           SettingPreference settingPreference) {
         this.getMoviesPagedUseCase = getMoviesPagedUseCase;
         this.addFavoriteMovieUseCase = addFavoriteMovieUseCase;
         this.removeFavoriteMovieUseCase = removeFavoriteMovieUseCase;
+        this.getMovieDetailUseCase = getMovieDetailUseCase;
         this.settingPreference = settingPreference;
 
         moviesFlowable = categorySubject
@@ -57,6 +62,10 @@ public class MovieViewModel extends ViewModel {
 
     public Flowable<PagingData<Movie>> getMovies() {
         return moviesFlowable;
+    }
+
+    public Single<Movie> getMovieDetail(int movieId) {
+        return getMovieDetailUseCase.execute(movieId);
     }
     private final MutableLiveData<Movie> favoriteChangeLiveData = new MutableLiveData<>();
 

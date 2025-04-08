@@ -9,7 +9,7 @@
             type="com.example.domain.entity.Movie" />
         <variable
             name="viewModel"
-            type="com.example.presentation.ui.viewmodel.MovieDetailViewModel" />
+            type="com.example.presentation.ui.viewmodel.MovieViewModel" />
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -72,10 +72,9 @@
             android:scaleType="centerCrop"
             android:layout_marginStart="10dp"
             android:src="@{movie.isFavorite ? @drawable/ystart : @drawable/start}"
-
+            android:onClick="@{() -> viewModel.toggleFavorite(movie)}"
             app:layout_constraintStart_toEndOf="@+id/detail_title"
             app:layout_constraintTop_toTopOf="@+id/detail_poster" />
-<!--        android:onClick="@{() -> viewModel.toggleFavorite(movie, 1)}"-->
 
         <ImageView
             android:id="@+id/detail_adult_icon"
