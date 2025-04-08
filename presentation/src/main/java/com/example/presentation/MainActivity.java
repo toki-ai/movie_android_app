@@ -145,6 +145,30 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        headerBinding.reminderBtnShow.setOnClickListener(v -> {
+            int currentTab = binding.viewPager.getCurrentItem();
+            NavController navController = navControllers.get(currentTab);
+            if (navController != null) {
+                switch (currentTab) {
+                    case 0:
+                        navController.navigate(R.id.action_listMoviesFragment_to_reminderFragment);
+                        break;
+                    case 1:
+                        navController.navigate(R.id.action_favoriteFragment_to_reminderFragment);
+                        break;
+                    case 2:
+                        navController.navigate(R.id.action_settingFragment_to_reminderFragment);
+                        break;
+                    case 3:
+                        navController.navigate(R.id.action_aboutFragment_to_reminderFragment);
+                        break;
+                }
+                binding.drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                Toast.makeText(this, "NavController is null for tab " + currentTab, Toast.LENGTH_SHORT).show();
+            }
+        });
+
         headerBinding.reminderShortList.setLayoutManager(new LinearLayoutManager(this));
     }
 

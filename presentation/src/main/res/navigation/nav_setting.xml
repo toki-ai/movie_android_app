@@ -8,5 +8,26 @@
     <fragment
         android:id="@+id/settingFragment"
         android:name="com.example.presentation.ui.fragment.SettingFragment"
-        tools:layout="@xml/preferences" />
+        tools:layout="@xml/preferences" >
+        <action
+            android:id="@+id/action_settingFragment_to_reminderFragment"
+            app:destination="@id/reminderFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/movieDetailFragment"
+        android:name="com.example.presentation.ui.fragment.MovieDetailFragment"
+        tools:layout="@layout/fragment_movie_detail" />
+
+    <fragment
+        android:id="@+id/reminderFragment"
+        android:name="com.example.presentation.ui.fragment.ReminderFragment"
+        tools:layout="@layout/fragment_reminder">
+        <action
+            android:id="@+id/action_reminderFragment_to_movieDetailFragment"
+            app:destination="@id/movieDetailFragment">
+            <argument
+                android:name="movieTitle"
+                app:argType="string" />
+        </action>
+    </fragment>
 </navigation>

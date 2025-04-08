@@ -8,6 +8,7 @@ import com.example.presentation.ui.fragment.AboutFragment;
 import com.example.presentation.ui.fragment.FavoriteFragment;
 import com.example.presentation.ui.fragment.ListMoviesFragment;
 import com.example.presentation.ui.fragment.MovieDetailFragment;
+import com.example.presentation.ui.fragment.ReminderFragment;
 import com.example.presentation.ui.fragment.SettingFragment;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
@@ -38,4 +39,6 @@ public interface AppComponent {
     void inject(MovieDetailFragment movieDetailFragment);
 
     void inject(ReminderWorker reminderWorker);
+
+    void inject(ReminderFragment reminderFragment);
 }

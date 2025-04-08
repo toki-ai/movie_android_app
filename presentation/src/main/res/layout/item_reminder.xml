@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+        <variable
+            name="reminder"
+            type="com.example.domain.entity.Reminder" />
+        <variable name="viewModel" type="com.example.presentation.ui.viewmodel.ReminderViewModel" />
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp"
+        >
+<!--        android:onClick="@{() -> viewModel.(reminder)}"-->
+
+        <ImageView
+            android:id="@+id/posterImageView"
+            android:layout_width="80dp"
+            android:layout_height="120dp"
+            android:scaleType="centerCrop"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Thông tin phim -->
+        <TextView
+            android:id="@+id/movieInfoTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textSize="16sp"
+            android:textStyle="bold"
+
+            app:layout_constraintStart_toEndOf="@id/posterImageView"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/deleteButton" />
+<!--        android:text="@{reminder.movieTitle + ' - ' + reminder.year + ' - ' + reminder.rating}"-->
+
+        <!-- Thời gian reminder -->
+        <TextView
+            android:id="@+id/reminderTimeTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textSize="14sp"
+
+            app:layout_constraintStart_toStartOf="@id/movieInfoTextView"
+            app:layout_constraintTop_toBottomOf="@id/movieInfoTextView"
+            app:layout_constraintEnd_toStartOf="@id/deleteButton" />
+
+<!--        android:text="@{'Reminder at: ' + @string/date_format(reminder.reminderTime)}"-->
+
+        <!-- Nút xóa -->
+        <ImageButton
+            android:id="@+id/deleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@android:drawable/ic_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+<!--        android:onClick="@{() -> listener.onDeleteClick(reminder)}"-->
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</layout>
