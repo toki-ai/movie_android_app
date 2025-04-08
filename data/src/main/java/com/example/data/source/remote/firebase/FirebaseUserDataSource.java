@@ -1,5 +1,7 @@
 package com.example.data.source.remote.firebase;
 
+import android.util.Log;
+
 import com.example.domain.entity.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -41,8 +43,17 @@ public class FirebaseUserDataSource {
     }
 
     public Single<User> saveUser(User user) {
-        return Single.create(emitter -> userRef.setValue(user)
-                .addOnSuccessListener(aVoid -> emitter.onSuccess(user))
-                .addOnFailureListener(emitter::onError));
+        return Single.create(emitter -> {
+            Log.d("FirebaseUserDataSource", "Attempting to save user: " + user.getName());
+            userRef.setValue(user)
+                    .addOnSuccessListener(aVoid -> {
+                        Log.d("FirebaseUserDataSource", "User saved successfully");
+                        emitter.onSuccess(user);
+                    })
+                    .addOnFailureListener(e -> {
+                        Log.e("FirebaseUserDataSource", "Failed to save user", e);
+                        emitter.onError(e);
+                    });
+        });
     }
 }

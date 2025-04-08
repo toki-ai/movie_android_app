@@ -1,12 +1,23 @@
 package com.example.presentation;
 
+import android.app.DatePickerDialog;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -19,16 +30,28 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.example.presentation.databinding.ActivityMainBinding;
 import com.example.presentation.databinding.NavHeaderBinding;
 import com.example.presentation.di.MyApplication;
+import com.example.presentation.ui.adapter.ReminderAdapter;
 import com.example.presentation.ui.adapter.ViewPagerAdapter;
+import com.example.presentation.ui.viewmodel.ReminderViewModel;
 import com.example.presentation.ui.viewmodel.SharedViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
 import com.example.presentation.util.Constant;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+
+import android.Manifest;
 
 import javax.inject.Inject;
 
@@ -37,9 +60,14 @@ public class MainActivity extends AppCompatActivity {
     private NavHeaderBinding headerBinding;
     private List<NavController> navControllers = new ArrayList<>(Collections.nCopies(4, null));
     private AppBarConfiguration appBarConfiguration;
+    private ReminderAdapter reminderShortAdapter;
 
     @Inject
     UserViewModel userViewModel;
+    @Inject
+    ReminderViewModel reminderViewModel;
+
+    private Bitmap profileImageBitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,11 +75,14 @@ public class MainActivity extends AppCompatActivity {
         MyApplication.getAppComponent().inject(this);
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
+        userViewModel.setContext(this);
         setupViewPager();
         setUpToolbar();
         setUpDrawer();
         setupBackPressedHandler();
+        setupReminderShortList();
+        userViewModel.loadUser();
+
     }
 
     private void setupViewPager() {
@@ -145,6 +176,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        headerBinding.profileBirthday.setOnClickListener(v -> {
+            if (userViewModel.getIsEditModeLiveData().getValue() != null && userViewModel.getIsEditModeLiveData().getValue()) {
+                showDatePickerDialog();
+            }
+        });
+
+        headerBinding.profileAvatar.setOnClickListener(v -> {
+            if (userViewModel.getIsEditModeLiveData().getValue() != null && userViewModel.getIsEditModeLiveData().getValue()) {
+                showMediaPopup();
+            }
+        });
+
+        headerBinding.profileBtnSave.setOnClickListener(v -> {
+            userViewModel.saveProfile(getProfileImageBitmap());
+        });
+
         headerBinding.reminderBtnShow.setOnClickListener(v -> {
             int currentTab = binding.viewPager.getCurrentItem();
             NavController navController = navControllers.get(currentTab);
@@ -172,6 +219,53 @@ public class MainActivity extends AppCompatActivity {
         headerBinding.reminderShortList.setLayoutManager(new LinearLayoutManager(this));
     }
 
+    private void showDatePickerDialog() {
+        Calendar calendar = Calendar.getInstance();
+        String currentBirthday = userViewModel.getUserProfile().birthday.get();
+        if (currentBirthday != null && !currentBirthday.isEmpty()) {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                calendar.setTime(sdf.parse(currentBirthday));
+            } catch (Exception e) {
+
+            }
+        }
+
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(
+                this,
+                (view, selectedYear, selectedMonth, selectedDay) -> {
+                    String selectedDate = String.format(Locale.getDefault(), "%02d/%02d/%d", selectedDay, selectedMonth + 1, selectedYear);
+                    userViewModel.getUserProfile().birthday.set(selectedDate);
+                },
+                year, month, day
+        );
+        datePickerDialog.show();
+    }
+
+    private void showMediaPopup() {
+        PopupMenu popupMenu = new PopupMenu(this, headerBinding.profileAvatar);
+        popupMenu.getMenuInflater().inflate(R.menu.camera_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(item -> {
+            int itemId = item.getItemId();
+            if (itemId == R.id.camera_menu_camera) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                    cameraLauncher.launch(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
+                } else {
+                    requestPermissionLauncher.launch(Manifest.permission.CAMERA);
+                }
+            } else if (itemId == R.id.camera_menu_gallery) {
+                galleryLauncher.launch(new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI));
+            }
+            return true;
+        });
+        popupMenu.show();
+    }
+
+
     private void setupBackPressedHandler() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -194,6 +288,16 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void setupReminderShortList() {
+        reminderShortAdapter = new ReminderAdapter(reminderViewModel, binding.getRoot(), null); // navController không cần thiết ở đây
+        reminderShortAdapter.setMaxItems(2);
+        headerBinding.reminderShortList.setAdapter(reminderShortAdapter);
+
+        reminderViewModel.getAllReminders().observe(this, reminders -> {
+            reminderShortAdapter.setReminders(reminders);
+        });
+    }
+
     @Override
     public boolean onSupportNavigateUp() {
         int currentItem = binding.viewPager.getCurrentItem();
@@ -203,4 +307,44 @@ public class MainActivity extends AppCompatActivity {
         }
         return super.onSupportNavigateUp();
     }
+
+    public Bitmap getProfileImageBitmap() {
+        return profileImageBitmap;
+    }
+
+
+    private final ActivityResultLauncher<Intent> galleryLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri imageUri = result.getData().getData();
+                    try {
+                        profileImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                        headerBinding.profileAvatar.setImageBitmap(profileImageBitmap);
+                        Log.d("MainActivity", "Gallery image loaded into Bitmap");
+                    } catch (Exception e) {
+                        Log.e("MainActivity", "Error loading gallery image", e);
+                        Toast.makeText(this, "Error loading image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+
+    private final ActivityResultLauncher<Intent> cameraLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    profileImageBitmap = (Bitmap) Objects.requireNonNull(result.getData().getExtras()).get("data");
+                    if (profileImageBitmap != null) {
+                        headerBinding.profileAvatar.setImageBitmap(profileImageBitmap);
+                        Log.d("MainActivity", "Camera image loaded into Bitmap");
+                    }
+                }
+            });
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    cameraLauncher.launch(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
+                } else {
+                    Toast.makeText(this, "Camera permission denied!", Toast.LENGTH_SHORT).show();
+                }
+            });
 }
