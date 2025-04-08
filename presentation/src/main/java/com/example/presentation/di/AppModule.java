@@ -3,22 +3,29 @@ package com.example.presentation.di;
 import android.content.Context;
 import com.example.data.preference.SettingPreference;
 import com.example.data.repository.MovieRepositoryImpl;
+import com.example.data.repository.ReminderRepositoryImpl;
 import com.example.data.repository.UserRepositoryImpl;
 import com.example.data.source.local.AppDatabase;
 import com.example.data.source.local.dao.FavoriteMovieDao;
+import com.example.data.source.local.dao.ReminderDao;
 import com.example.data.source.remote.firebase.FirebaseUserDataSource;
 import com.example.data.source.remote.service.MovieApiService;
 import com.example.domain.repository.MovieRepository;
+import com.example.domain.repository.ReminderRepository;
 import com.example.domain.repository.UserRepository;
 import com.example.domain.usecase.AddFavoriteMovieUseCase;
+import com.example.domain.usecase.AddReminderUseCase;
+import com.example.domain.usecase.GetAllRemindersUseCase;
 import com.example.domain.usecase.GetFavoriteMoviesUseCase;
 import com.example.domain.usecase.GetMovieDetailUseCase;
 import com.example.domain.usecase.GetMoviesPagedUseCase;
 import com.example.domain.usecase.GetUserUseCase;
 import com.example.domain.usecase.RemoveFavoriteMovieUseCase;
+import com.example.domain.usecase.RemoveReminderUseCase;
 import com.example.domain.usecase.SaveUserUseCase;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
+import com.example.presentation.ui.viewmodel.ReminderViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
 
 import javax.inject.Singleton;
@@ -84,6 +91,18 @@ public class AppModule {
 
     @Provides
     @Singleton
+    ReminderDao provideReminderDao(AppDatabase database) {
+        return database.reminderDao();
+    }
+
+    @Provides
+    @Singleton
+    public ReminderRepository provideReminderRepository( ReminderDao reminderDao) {
+        return new ReminderRepositoryImpl(reminderDao);
+    }
+
+    @Provides
+    @Singleton
     GetMoviesPagedUseCase provideGetMoviesPagedUseCase(MovieRepository repository) {
         return new GetMoviesPagedUseCase(repository);
     }
@@ -102,14 +121,32 @@ public class AppModule {
 
     @Provides
     @Singleton
+    GetAllRemindersUseCase provideGetAllRemindersUseCase(ReminderRepository repository) {
+        return new GetAllRemindersUseCase(repository);
+    }
+
+    @Provides
+    @Singleton
     AddFavoriteMovieUseCase provideAddFavoriteMovieUseCase(MovieRepository repository) {
         return new AddFavoriteMovieUseCase(repository);
     }
 
     @Provides
     @Singleton
+    AddReminderUseCase provideAddReminderUseCase(ReminderRepository repository) {
+        return new AddReminderUseCase(repository);
+    }
+
+    @Provides
+    @Singleton
     RemoveFavoriteMovieUseCase provideRemoveFavoriteMovieUseCase(MovieRepository repository) {
         return new RemoveFavoriteMovieUseCase(repository);
+    }
+
+    @Provides
+    @Singleton
+    RemoveReminderUseCase provideRemoveReminderUseCase(ReminderRepository repository) {
+        return new RemoveReminderUseCase(repository);
     }
 
     @Provides
@@ -134,6 +171,12 @@ public class AppModule {
     @Singleton
     public FavoriteViewModel provideFavoriteViewModel(GetFavoriteMoviesUseCase useCase, RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase) {
         return new FavoriteViewModel(useCase, removeFavoriteMovieUseCase);
+    }
+
+    @Provides
+    @Singleton
+    public ReminderViewModel provideReminderViewModel(AddReminderUseCase addAddReminderUseCase, RemoveReminderUseCase removeFavoriteMovieUseCase, GetAllRemindersUseCase getAllRemindersUseCase) {
+        return new ReminderViewModel(addAddReminderUseCase, removeFavoriteMovieUseCase, getAllRemindersUseCase);
     }
 
     @Provides

@@ -7,11 +7,14 @@ import androidx.room.Room;
 import androidx.room.RoomDatabase;
 
 import com.example.data.source.local.dao.FavoriteMovieDao;
+import com.example.data.source.local.dao.ReminderDao;
 import com.example.data.source.local.entity.FavoriteMovieEntity;
+import com.example.data.source.local.entity.ReminderEntity;
 
-@Database(entities = {FavoriteMovieEntity.class}, version = 1, exportSchema = false)
+@Database(entities = {FavoriteMovieEntity.class, ReminderEntity.class}, version = 3, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract FavoriteMovieDao favoriteDao();
+    public abstract ReminderDao reminderDao();
 
     private static volatile AppDatabase INSTANCE;
 
@@ -21,6 +24,7 @@ public abstract class AppDatabase extends RoomDatabase {
                 if (INSTANCE == null) {
                     INSTANCE = Room.databaseBuilder(context.getApplicationContext(),
                                     AppDatabase.class, "favorite_database")
+                            .fallbackToDestructiveMigration()
                             .build();
                 }
             }

@@ -12,6 +12,7 @@ import com.example.presentation.ui.fragment.SettingFragment;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
+import com.example.presentation.worker.ReminderWorker;
 
 import dagger.Component;
 import javax.inject.Singleton;
@@ -35,4 +36,6 @@ public interface AppComponent {
     void inject(UserViewModel userViewModel);
 
     void inject(MovieDetailFragment movieDetailFragment);
+
+    void inject(ReminderWorker reminderWorker);
 }

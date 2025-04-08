@@ -5,63 +5,57 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 
-public class Reminder {
-
+public class Reminder { ;
     private int movieId;
-    private long timestamp;
-    private Movie movieDto;
+    private String movieTitle;
+    private String posterUrl;
+    private String year;
+    private float rating;
+    private long reminderTime;
 
-    public Reminder() {
-    }
-
-    public Reminder(int movieId, long timestamp) {
+    public Reminder(int movieId, String movieTitle, String posterUrl, String year, float rating, long reminderTime) {
         this.movieId = movieId;
-        this.timestamp = timestamp;
+        this.movieTitle = movieTitle;
+        this.posterUrl = posterUrl;
+        this.year = year;
+        this.rating = rating;
+        this.reminderTime = reminderTime;
     }
 
-    public int getMovieId() {
-        return movieId;
+    public int getMovieId() { return movieId; }
+    public String getMovieTitle() { return movieTitle; }
+    public String getPosterUrl() { return posterUrl; }
+    public String getYear() { return year; }
+    public float getRating() { return rating; }
+    public long getReminderTime() { return reminderTime; }
+
+    public String getFormattedTimestamp() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault());
+        return sdf.format(new Date(reminderTime));
     }
 
     public void setMovieId(int movieId) {
         this.movieId = movieId;
     }
 
-    public long getTimestamp() {
-        return timestamp;
+    public void setReminderTime(long reminderTime) {
+        this.reminderTime = reminderTime;
     }
 
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
+    public void setRating(float rating) {
+        this.rating = rating;
     }
 
-    public Movie getMovieDto() {
-        return movieDto;
+    public void setYear(String year) {
+        this.year = year;
     }
 
-    public void setMovieDto(Movie movieDto) {
-        this.movieDto = movieDto;
+    public void setPosterUrl(String posterUrl) {
+        this.posterUrl = posterUrl;
     }
 
-    public String getMovieTitle() {
-        return movieDto.getTitle();
-    }
-
-    public String getMovieReleaseYear() {
-        return movieDto.getReleaseYear();
-    }
-
-    public double getMovieVoteAverage() {
-        return movieDto.getVoteAverage();
-    }
-
-    public String getFormattedTimestamp() {
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.getDefault());
-        return sdf.format(new Date(timestamp));
-    }
-
-    public String getMoviePosterPathUrl() {
-        return movieDto.getPosterPathUrl();
+    public void setMovieTitle(String movieTitle) {
+        this.movieTitle = movieTitle;
     }
 
     @Override
@@ -69,11 +63,11 @@ public class Reminder {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Reminder that = (Reminder) o;
-        return movieId == that.movieId && timestamp == that.timestamp;
+        return movieId == that.movieId && reminderTime == that.reminderTime;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(movieId, timestamp);
+        return Objects.hash(movieId, reminderTime);
     }
 }
