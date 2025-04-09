@@ -96,7 +96,7 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
                 if (navController != null) {
                     Bundle args = new Bundle();
                     args.putInt("arg_movie_id", reminder.getMovieId());
-
+                    args.putString("arg_movie_title", reminder.getMovieTitle());
 
                     navController.navigate(R.id.action_reminderFragment_to_movieDetailFragment, args);
                 }

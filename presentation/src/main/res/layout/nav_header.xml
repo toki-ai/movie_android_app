@@ -28,7 +28,7 @@
             android:scaleType="centerCrop"
             android:clickable="true"
             android:focusable="true"
-            app:imageUrl="@{viewModel.userProfile.image}"
+            android:imageBitmap="@{viewModel.profileImageBitmap}"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -39,7 +39,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="Username"
-            android:text="@={viewModel.userProfile.name}"
+            android:text="@{viewModel.nameLiveData}"
             android:textAlignment="center"
             android:textStyle="bold"
             android:enabled="@{isEditMode}"
@@ -66,7 +66,7 @@
             android:layout_height="wrap_content"
             android:hint="DD/MM/YYYY"
             android:inputType="none"
-            android:text="@={viewModel.userProfile.birthday}"
+            android:text="@{viewModel.birthdayLiveData}"
             android:enabled="@{isEditMode}"
             android:layout_marginTop="15dp"
             android:layout_marginStart="10dp"
@@ -90,7 +90,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="email@gmail.com"
-            android:text="@={viewModel.userProfile.email}"
+            android:text="@{viewModel.emailLiveData}"
             android:enabled="@{isEditMode}"
             android:layout_marginTop="10dp"
             android:layout_marginStart="10dp"
@@ -123,14 +123,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="@{isEditMode}"
-                android:checked="@={viewModel.userProfile.gender}"
+                android:checked="@{viewModel.genderLiveData}"
                 android:text="Male" />
             <RadioButton
                 android:id="@+id/radio_female"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="@{isEditMode}"
-                android:checked="@={!viewModel.userProfile.gender}"
+                android:checked="@{!viewModel.genderLiveData}"
                 android:text="Female" />
         </RadioGroup>
 

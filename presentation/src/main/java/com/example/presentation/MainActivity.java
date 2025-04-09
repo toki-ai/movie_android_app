@@ -5,7 +5,6 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -95,6 +94,15 @@ public class MainActivity extends AppCompatActivity {
         favoriteViewModel.loadFavoriteMovies();
 
         observeToolbarTitle();
+
+        userViewModel.getImageLiveData().observe(this, image -> {
+            if (image != null && !image.startsWith("http")) {
+                Bitmap bitmap = userViewModel.getProfileImageBitmap();
+                if (bitmap != null) {
+                    headerBinding.profileAvatar.setImageBitmap(bitmap);
+                }
+            }
+        });
     }
 
     private void observeToolbarTitle() {
@@ -174,7 +182,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void updateNavController(int position) {
-        if (navControllers.get(position) == null) {
+        NavController currentNavController = navControllers.get(position);
+        if (currentNavController == null) {
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
                     .findFragmentByTag("f" + position);
             if (navHostFragment != null) {
@@ -186,6 +195,11 @@ public class MainActivity extends AppCompatActivity {
                 });
             } else {
                 Log.e("NavDebug", "NavHostFragment is null for tag: f" + position);
+            }
+        } else {
+            NavDestination currentDestination = currentNavController.getCurrentDestination();
+            if (currentDestination != null) {
+                updateToolbarTitleForFragment(currentDestination, currentNavController.getCurrentBackStackEntry() != null ? currentNavController.getCurrentBackStackEntry().getArguments() : null);
             }
         }
     }
@@ -204,8 +218,9 @@ public class MainActivity extends AppCompatActivity {
         } else if (destinationId == R.id.reminderFragment) {
             title = "Reminder";
         } else if (destinationId == R.id.movieDetailFragment) {
-            if (arguments != null && arguments.containsKey("movieTitle")) {
-                title = arguments.getString("movieTitle");
+            if (arguments != null && arguments.containsKey("arg_movie_title")) {
+                title = arguments.getString("arg_movie_title");
+                Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
                 title = title != null ? title : "Movie Detail";
             } else {
                 title = "Movie Detail";
@@ -225,7 +240,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //implement back icon with nav graph
     private void syncActionBarWithNavController(int position) {
         NavController currentNavController = navControllers.get(position);
         if (currentNavController != null) {
@@ -275,7 +289,15 @@ public class MainActivity extends AppCompatActivity {
         });
 
         headerBinding.profileBtnSave.setOnClickListener(v -> {
-            userViewModel.saveProfile(getProfileImageBitmap());
+            // Lấy dữ liệu từ UI và cập nhật vào ViewModel
+            userViewModel.setName(headerBinding.profileName.getText().toString());
+            userViewModel.setEmail(headerBinding.profileMail.getText().toString());
+            userViewModel.setBirthday(headerBinding.profileBirthday.getText().toString());
+            userViewModel.setGender(headerBinding.radioMale.isChecked());
+            if (profileImageBitmap != null) {
+                userViewModel.setImage(userViewModel.bitmapToBase64(profileImageBitmap));
+            }
+            userViewModel.saveProfile(profileImageBitmap);
         });
 
         headerBinding.reminderBtnShow.setOnClickListener(v -> {
@@ -315,7 +337,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showDatePickerDialog() {
         Calendar calendar = Calendar.getInstance();
-        String currentBirthday = userViewModel.getUserProfile().birthday.get();
+        String currentBirthday = userViewModel.getBirthdayLiveData().getValue();
         if (currentBirthday != null && !currentBirthday.isEmpty()) {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
@@ -333,7 +355,8 @@ public class MainActivity extends AppCompatActivity {
                 this,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
                     String selectedDate = String.format(Locale.getDefault(), "%02d/%02d/%d", selectedDay, selectedMonth + 1, selectedYear);
-                    userViewModel.getUserProfile().birthday.set(selectedDate);
+                    userViewModel.setBirthday(selectedDate);
+                    headerBinding.profileBirthday.setText(selectedDate); // Cập nhật UI thủ công
                 },
                 year, month, day
         );
@@ -402,6 +425,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         profileImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                         headerBinding.profileAvatar.setImageBitmap(profileImageBitmap);
+                        userViewModel.setImage(userViewModel.bitmapToBase64(profileImageBitmap));
                     } catch (Exception e) {
                         Toast.makeText(this, "Error loading image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
@@ -414,6 +438,7 @@ public class MainActivity extends AppCompatActivity {
                     profileImageBitmap = (Bitmap) Objects.requireNonNull(result.getData().getExtras()).get("data");
                     if (profileImageBitmap != null) {
                         headerBinding.profileAvatar.setImageBitmap(profileImageBitmap);
+                        userViewModel.setImage(userViewModel.bitmapToBase64(profileImageBitmap));
                     }
                 }
             });

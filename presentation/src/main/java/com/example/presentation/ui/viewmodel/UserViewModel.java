@@ -3,8 +3,10 @@ package com.example.presentation.ui.viewmodel;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.util.Base64;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -14,16 +16,13 @@ import androidx.lifecycle.ViewModel;
 import com.example.domain.entity.User;
 import com.example.domain.usecase.GetUserUseCase;
 import com.example.domain.usecase.SaveUserUseCase;
-import com.example.presentation.ui.model.UserProfile;
-import com.google.firebase.storage.FirebaseStorage;
-import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
 
 import javax.inject.Inject;
 
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 
 public class UserViewModel extends ViewModel {
     private final GetUserUseCase getUserUseCase;
@@ -38,7 +37,6 @@ public class UserViewModel extends ViewModel {
     private final MutableLiveData<Boolean> isEditModeLiveData = new MutableLiveData<>(false);
     private final MutableLiveData<String> errorMessageLiveData = new MutableLiveData<>();
 
-    private final UserProfile userProfile = new UserProfile();
     private Context context;
 
     public void setContext(Context context) {
@@ -58,6 +56,18 @@ public class UserViewModel extends ViewModel {
         this.saveUserUseCase = saveUserUseCase;
     }
 
+    public String bitmapToBase64(Bitmap bitmap) {
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, 300, 300, true);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        resizedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, baos);
+        return Base64.encodeToString(baos.toByteArray(), Base64.DEFAULT);
+    }
+
+    private Bitmap base64ToBitmap(String base64String) {
+        byte[] bytes = Base64.decode(base64String, Base64.DEFAULT);
+        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+    }
+
     @SuppressLint("CheckResult")
     public void loadUser() {
         getUserUseCase.execute()
@@ -70,12 +80,6 @@ public class UserViewModel extends ViewModel {
                             emailLiveData.setValue(user.getEmail());
                             genderLiveData.setValue(user.isGender());
                             imageLiveData.setValue(user.getImage());
-
-                            userProfile.name.set(user.getName());
-                            userProfile.birthday.set(user.getBirthday());
-                            userProfile.email.set(user.getEmail());
-                            userProfile.gender.set(user.isGender());
-                            userProfile.image.set(user.getImage());
                         },
                         throwable -> {
                             User defaultUser = new User(
@@ -95,12 +99,6 @@ public class UserViewModel extends ViewModel {
                                                 emailLiveData.setValue(defaultUser.getEmail());
                                                 genderLiveData.setValue(defaultUser.isGender());
                                                 imageLiveData.setValue(defaultUser.getImage());
-
-                                                userProfile.name.set(defaultUser.getName());
-                                                userProfile.birthday.set(defaultUser.getBirthday());
-                                                userProfile.email.set(defaultUser.getEmail());
-                                                userProfile.gender.set(defaultUser.isGender());
-                                                userProfile.image.set(defaultUser.getImage());
                                             },
                                             error -> errorMessageLiveData.setValue("Failed to save user: " + error.getMessage())
                                     );
@@ -117,11 +115,11 @@ public class UserViewModel extends ViewModel {
 
     @SuppressLint("CheckResult")
     public void saveProfile(Bitmap profileImageBitmap) {
-        String name = userProfile.name.get();
-        String email = userProfile.email.get();
-        String birthday = userProfile.birthday.get() != null ? userProfile.birthday.get() : "";
-        Boolean gender = userProfile.gender.get() != null ? userProfile.gender.get() : true;
-        String image = userProfile.image.get() != null ? userProfile.image.get() : "https://example.com/default_image.jpg";
+        String name = nameLiveData.getValue();
+        String email = emailLiveData.getValue();
+        String birthday = birthdayLiveData.getValue() != null ? birthdayLiveData.getValue() : "";
+        Boolean gender = genderLiveData.getValue() != null ? genderLiveData.getValue() : true;
+        String image = imageLiveData.getValue() != null ? imageLiveData.getValue() : "https://example.com/default_image.jpg";
 
         if (name == null || name.isEmpty() || email == null || email.isEmpty()) {
             errorMessageLiveData.setValue("Please fill username and email");
@@ -134,46 +132,12 @@ public class UserViewModel extends ViewModel {
             return;
         }
 
+        if (profileImageBitmap != null) {
+            image = bitmapToBase64(profileImageBitmap);
+        }
+
         User updatedUser = new User(name, image, gender, email, birthday);
-
-
-            if (profileImageBitmap != null) {
-                String folderPath = "users/default_user";
-                String fileName = "avatar_" + System.currentTimeMillis() + ".jpg";
-                StorageReference storageRef = FirebaseStorage.getInstance().getReference();
-
-                // Create a reference to the file location
-                StorageReference imageRef = storageRef.child(folderPath).child(fileName);
-
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                profileImageBitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos); // Reduced quality for better performance
-                byte[] imageData = baos.toByteArray();
-
-                Log.d("UserViewModel", "Uploading image to: " + folderPath + "/" + fileName);
-
-                // Upload with progress monitoring
-                imageRef.putBytes(imageData)
-                        .addOnProgressListener(taskSnapshot -> {
-                            double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
-                            Log.d("UserViewModel", "Upload progress: " + progress + "%");
-                        })
-                        .addOnSuccessListener(taskSnapshot -> {
-                            Log.d("UserViewModel", "Upload successful");
-                            imageRef.getDownloadUrl().addOnSuccessListener(uri -> {
-                                Log.d("UserViewModel", "Download URL: " + uri.toString());
-                                updatedUser.setImage(uri.toString());
-                                saveToDatabase(updatedUser);
-                            });
-                        })
-                        .addOnFailureListener(e -> {
-                            Log.e("UserViewModel", "Upload failed: " + e.getMessage(), e);
-                            // Fall back to existing image or default
-                            saveToDatabase(updatedUser);
-                            errorMessageLiveData.setValue("Failed to upload image: " + e.getMessage());
-                        });
-            } else {
-                saveToDatabase(updatedUser);
-            }
+        saveToDatabase(updatedUser);
     }
 
     @SuppressLint("CheckResult")
@@ -206,6 +170,19 @@ public class UserViewModel extends ViewModel {
                 );
     }
 
+    public Bitmap getProfileImageBitmap() {
+        String imageString = imageLiveData.getValue();
+        if (imageString != null && !imageString.startsWith("http")) {
+            try {
+                return base64ToBitmap(imageString);
+            } catch (Exception e) {
+                Log.e("UserViewModel", "Failed to decode base64 image", e);
+            }
+        }
+        return null;
+    }
+
+    // Getters for LiveData
     public LiveData<String> getNameLiveData() {
         return nameLiveData;
     }
@@ -234,7 +211,24 @@ public class UserViewModel extends ViewModel {
         return errorMessageLiveData;
     }
 
-    public UserProfile getUserProfile() {
-        return userProfile;
+    // Setters to update MutableLiveData
+    public void setBirthday(String birthday) {
+        birthdayLiveData.setValue(birthday);
+    }
+
+    public void setImage(String image) {
+        imageLiveData.setValue(image);
+    }
+
+    public void setName(String name) {
+        nameLiveData.setValue(name);
+    }
+
+    public void setEmail(String email) {
+        emailLiveData.setValue(email);
+    }
+
+    public void setGender(boolean gender) {
+        genderLiveData.setValue(gender);
     }
 }
