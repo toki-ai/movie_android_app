@@ -101,6 +101,8 @@ dependencies {
     implementation 'com.google.firebase:firebase-storage:20.3.0'
     implementation 'com.google.firebase:firebase-database:20.3.0'
 
+    implementation "com.airbnb.android:lottie:3.4.0"
+
     // Module dependencies
     implementation project(':data')
     implementation project(':domain')

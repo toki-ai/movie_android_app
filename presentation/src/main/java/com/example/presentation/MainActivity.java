@@ -5,6 +5,7 @@ import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -253,8 +254,8 @@ public class MainActivity extends AppCompatActivity {
         ActionBarDrawerToggle mActionBarDrawerToggle = new ActionBarDrawerToggle(
                 this, binding.drawerLayout, binding.toolbar, R.string.nav_open, R.string.nav_close);
         binding.drawerLayout.addDrawerListener(mActionBarDrawerToggle);
+        mActionBarDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_launcher_foreground);
         mActionBarDrawerToggle.syncState();
-
         headerBinding = NavHeaderBinding.bind(binding.navView.getHeaderView(0));
         headerBinding.setViewModel(userViewModel);
         headerBinding.setLifecycleOwner(this);
