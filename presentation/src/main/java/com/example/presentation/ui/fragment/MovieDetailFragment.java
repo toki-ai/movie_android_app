@@ -172,7 +172,7 @@ public class MovieDetailFragment extends Fragment {
                         movie.getTitle(),
                         movie.getPosterPathUrl(),
                         movie.getReleaseDate().substring(0, 4),
-                        0f,
+                        Float.parseFloat(String.valueOf(movie.getVoteAverage())),
                         calendar.getTimeInMillis()
                 );
 

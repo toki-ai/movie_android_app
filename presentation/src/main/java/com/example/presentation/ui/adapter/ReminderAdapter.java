@@ -1,6 +1,7 @@
 package com.example.presentation.ui.adapter;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -71,8 +72,8 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
         void bind(Reminder reminder) {
             binding.setReminder(reminder);
             binding.setViewModel(viewModel);
-            String movieInfo = reminder.getMovieTitle() + " - " + reminder.getYear() + " - " + reminder.getRating();
-            binding.movieInfoTextView.setText(movieInfo);
+            binding.movieInfoTextView.setText(reminder.getMovieTitle());
+            binding.movieSubInfoTextView.setText("Year: " + reminder.getYear() + ", Rating: " + reminder.getRating());
 
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
             String reminderTime = "Reminder at: " + dateFormat.format(reminder.getReminderTime());
@@ -88,8 +89,24 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
 
             if (maxItems == 2) {
                 binding.deleteButton.setVisibility(View.GONE);
+                binding.movieSubInfoTextView.setVisibility(View.GONE);
             } else {
                 binding.deleteButton.setVisibility(View.VISIBLE);
+                binding.movieSubInfoTextView.setVisibility(View.VISIBLE);
+
+                binding.deleteButton.setOnClickListener(v -> {
+                    new AlertDialog.Builder(binding.getRoot().getContext(), R.style.CustomAlertDialogTheme)
+                            .setTitle("Delete Reminder")
+                            .setMessage("Are you sure you want to delete this reminder?")
+                            .setPositiveButton("Yes", (dialog, which) -> {
+                                viewModel.removeReminderNe(reminder);
+                            })
+                            .setNegativeButton("No", (dialog, which) -> {
+                                dialog.dismiss();
+                            })
+                            .setCancelable(true)
+                            .show();
+                });
             }
 
             binding.getRoot().setOnClickListener(v -> {

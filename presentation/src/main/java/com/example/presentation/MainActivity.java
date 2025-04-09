@@ -2,6 +2,7 @@ package com.example.presentation;
 
 import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -9,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -43,6 +45,7 @@ import com.example.presentation.ui.viewmodel.ReminderViewModel;
 import com.example.presentation.ui.viewmodel.SharedViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
 import com.example.presentation.util.Constant;
+import com.example.presentation.util.SpacingItemDecoration;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -333,6 +336,10 @@ public class MainActivity extends AppCompatActivity {
         reminderViewModel.getAllReminders().observe(this, reminders -> {
             reminderShortAdapter.setReminders(reminders);
         });
+
+        headerBinding.reminderShortList.addItemDecoration(
+                new SpacingItemDecoration((int) getResources().getDimension(R.dimen.reminder_item_spacing))
+        );
     }
 
     private void showDatePickerDialog() {
@@ -353,6 +360,7 @@ public class MainActivity extends AppCompatActivity {
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(
                 this,
+                R.style.MyDatePickerDialogTheme,
                 (view, selectedYear, selectedMonth, selectedDay) -> {
                     String selectedDate = String.format(Locale.getDefault(), "%02d/%02d/%d", selectedDay, selectedMonth + 1, selectedYear);
                     userViewModel.setBirthday(selectedDate);
@@ -364,7 +372,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showMediaPopup() {
-        PopupMenu popupMenu = new PopupMenu(this, headerBinding.profileAvatar);
+        Context wrapper = new ContextThemeWrapper(this, R.style.MyPopupMenuStyle);
+        PopupMenu popupMenu = new PopupMenu(wrapper, headerBinding.profileAvatar);
         popupMenu.getMenuInflater().inflate(R.menu.camera_menu, popupMenu.getMenu());
         popupMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();

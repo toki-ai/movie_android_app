@@ -5,10 +5,12 @@
     <color name="slash_bg">#008dc4</color>
     <color name="beige">#fcf6e4</color>
     <color name="gray">#bfbfbf</color>
+    <color name="dark_gray">#949292</color>
     <color name="pink">#FA70BC</color>
     <color name="main_bg">#0c1030</color>
     <color name="tab_bg">#051138</color>
+    <color name="drawer_bg">#2f50ae</color>
     <color name="text_main">#ffffff</color>
     <color name="text_blue">#27bdf9</color>
-    <color name="text_sub">#9194a1</color>
+    <color name="text_sub">#D0D6E0</color>
 </resources>

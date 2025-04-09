@@ -15,8 +15,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:padding="16dp"
-        android:background="@android:color/white">
+        android:background="@color/drawer_bg"
+        android:padding="16dp">
 
         <ImageView
             android:id="@+id/profile_avatar"
@@ -34,18 +34,32 @@
             app:layout_constraintTop_toTopOf="parent"
             android:layout_marginTop="50dp" />
 
+        <ImageView
+            android:id="@+id/drawer_icon_edit"
+            android:contentDescription="icon edit"
+            android:layout_width="25dp"
+            android:layout_height="25dp"
+            android:layout_marginTop="15dp"
+            android:visibility="@{isEditMode ? View.GONE : View.VISIBLE}"
+            android:onClick="@{() -> viewModel.toggleEditMode(true)}"
+            android:src="@drawable/ic_edit"
+            android:translationX="-20dp"
+            app:layout_constraintStart_toEndOf="@+id/profile_name"
+            app:layout_constraintTop_toTopOf="@+id/profile_name" />
+
         <EditText
             android:id="@+id/profile_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="Username"
             android:text="@{viewModel.nameLiveData}"
-            android:textAlignment="center"
+            android:gravity="end"
             android:textStyle="bold"
             android:enabled="@{isEditMode}"
-            android:backgroundTint="@color/white"
+            android:backgroundTint="@{isEditMode ?  @color/text_sub : @android:color/transparent}"
             android:textSize="24dp"
             android:layout_marginTop="10dp"
+            android:translationX="-30dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/profile_avatar" />
@@ -56,7 +70,7 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_marginTop="20dp"
-            android:src="@drawable/icon_drawer_cake"
+            android:src="@drawable/ic_yob"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/profile_name" />
 
@@ -81,7 +95,7 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_marginTop="20dp"
-            android:src="@drawable/icon_drawer_mail"
+            android:src="@drawable/ic_mail"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/drawer_icon_cake" />
 
@@ -94,7 +108,6 @@
             android:enabled="@{isEditMode}"
             android:layout_marginTop="10dp"
             android:layout_marginStart="10dp"
-            android:backgroundTint="@color/white"
             android:textSize="15dp"
             app:layout_constraintStart_toEndOf="@id/drawer_icon_cake"
             app:layout_constraintTop_toBottomOf="@+id/drawer_icon_cake" />
@@ -105,7 +118,7 @@
             android:layout_width="25dp"
             android:layout_height="25dp"
             android:layout_marginTop="20dp"
-            android:src="@drawable/icon_drawer_genders"
+            android:src="@drawable/ic_gender"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/drawer_icon_mail" />
 
@@ -113,7 +126,7 @@
             android:id="@+id/profile_genders"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="15dp"
             android:layout_marginStart="10dp"
             app:layout_constraintStart_toEndOf="@id/drawer_icon_cake"
             app:layout_constraintTop_toBottomOf="@+id/drawer_icon_mail"
@@ -123,10 +136,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="@{isEditMode}"
+                android:textColor="@color/text_main"
                 android:checked="@{viewModel.genderLiveData}"
                 android:text="Male" />
             <RadioButton
                 android:id="@+id/radio_female"
+                android:textColor="@color/text_main"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:enabled="@{isEditMode}"
@@ -135,26 +150,10 @@
         </RadioGroup>
 
         <TextView
-            android:id="@+id/profile_btn_edit"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Edit Profile"
-            android:background="@drawable/shape_button"
-            android:textColor="@color/white"
-            android:paddingHorizontal="10dp"
-            android:paddingVertical="5dp"
-            android:visibility="@{isEditMode ? View.GONE : View.VISIBLE}"
-            android:onClick="@{() -> viewModel.toggleEditMode(true)}"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/drawer_icon_gender" />
-
-        <TextView
             android:id="@+id/profile_btn_cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="20dp"
             android:text="Cancel"
             android:visibility="@{isEditMode ? View.VISIBLE : View.GONE}"
             android:background="@drawable/shape_button_gray"
@@ -170,7 +169,6 @@
             android:id="@+id/profile_btn_save"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
             android:text="Save"
             android:visibility="@{isEditMode ? View.VISIBLE : View.GONE}"
             android:background="@drawable/shape_button"
@@ -179,15 +177,17 @@
             android:paddingVertical="5dp"
             app:layout_constraintStart_toEndOf="@+id/profile_btn_cancel"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/profile_genders" />
+            app:layout_constraintTop_toTopOf="@+id/profile_btn_cancel" />
 
         <TextView
             android:id="@+id/reminder_drawer_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="100dp"
             android:textStyle="bold"
-            android:text="Reminder List:"
+            android:textColor="@color/text_main"
+            android:text="Reminder List"
+            android:textSize="18dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/profile_genders" />
 
@@ -195,9 +195,8 @@
             android:id="@+id/reminder_short_list"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
+            android:layout_marginTop="15dp"
             android:layout_marginBottom="20dp"
-            android:background="@color/beige"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/reminder_drawer_title"
             app:layout_constraintBottom_toTopOf="@+id/reminder_btn_show" />
