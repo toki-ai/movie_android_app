@@ -53,9 +53,12 @@ public class MovieRepositoryImpl implements MovieRepository {
         if (type != null && !type.isEmpty()) {
             settingPreference.setCategory(type);
         }
+        int pagesPerLoad = settingPreference.getPagesPerLoad();
+        int itemsPerPage = 20;
+        int pageSize = pagesPerLoad * itemsPerPage;
 
         Pager<Integer, Movie> pager = new Pager<>(
-                new PagingConfig(20),
+                new PagingConfig(pageSize),
                 () -> new MoviePagingSource(apiService, apiKey, favoriteDao, settingPreference, query)
         );
 

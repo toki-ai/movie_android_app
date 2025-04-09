@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -22,18 +23,17 @@ import android.widget.TextView;
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
-import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewpager2.widget.ViewPager2;
 
@@ -124,6 +124,108 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+
+        MenuItem searchItem = menu.findItem(R.id.menu_search);
+        SearchView searchView = (SearchView) searchItem.getActionView();
+        searchView.setQueryHint("Search movies...");
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                movieViewModel.searchMovies(query);
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                movieViewModel.searchMovies(newText);
+                return true;
+            }
+        });
+
+        searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+            @Override
+            public boolean onMenuItemActionExpand(MenuItem item) {
+                return true;
+            }
+
+            @Override
+            public boolean onMenuItemActionCollapse(MenuItem item) {
+                movieViewModel.refreshMovies();
+                return true;
+            }
+        });
+
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        int currentTab = binding.viewPager.getCurrentItem();
+        NavController currentNavController = navControllers.get(currentTab);
+        boolean shouldShowMenu = false;
+
+        if (currentNavController != null) {
+            NavDestination currentDestination = currentNavController.getCurrentDestination();
+            if (currentDestination != null) {
+                int destinationId = currentDestination.getId();
+                shouldShowMenu = (currentTab == 0 && destinationId == R.id.listMoviesFragment);
+            }
+        }
+
+        for (int i = 0; i < menu.size(); i++) {
+            menu.getItem(i).setVisible(shouldShowMenu);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        if (itemId == android.R.id.home) {
+            int currentItem = binding.viewPager.getCurrentItem();
+            NavController currentNavController = navControllers.get(currentItem);
+
+            if (currentNavController != null && currentNavController.getCurrentDestination() != null) {
+                int destinationId = currentNavController.getCurrentDestination().getId();
+                if (destinationId != R.id.listMoviesFragment && destinationId != R.id.favoriteFragment &&
+                        destinationId != R.id.settingFragment && destinationId != R.id.aboutFragment) {
+                    return currentNavController.navigateUp();
+                }
+            }
+
+            if (binding.drawerLayout.isDrawerOpen(GravityCompat.START)) {
+                binding.drawerLayout.closeDrawer(GravityCompat.START);
+            } else {
+                binding.drawerLayout.openDrawer(GravityCompat.START);
+            }
+            return true;
+        }
+
+        String selectedCategory = null;
+        if (itemId == R.id.category_popular) {
+            selectedCategory = "popular";
+        } else if (itemId == R.id.category_top_rated) {
+            selectedCategory = "top_rated";
+        } else if (itemId == R.id.category_upcoming) {
+            selectedCategory = "upcoming";
+        } else if (itemId == R.id.category_now_playing) {
+            selectedCategory = "now_playing";
+        }
+
+        if (selectedCategory != null) {
+            settingPreference.setCategory(selectedCategory);
+            movieViewModel.refreshMovies();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
     private void setupViewPagerAndToolbarTitleAndVisibleIcon() {
         ViewPagerAdapter adapter = new ViewPagerAdapter(this);
         binding.viewPager.setAdapter(adapter);
@@ -185,7 +287,6 @@ public class MainActivity extends AppCompatActivity {
 
         updateNavController(0);
         syncActionBarWithNavController(0);
-        updateToolbarIconVisibility(0);
     }
 
     private void updateToolbarIconVisibility(int position) {
@@ -207,6 +308,7 @@ public class MainActivity extends AppCompatActivity {
                 navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                     updateToolbarTitleForFragment(destination, arguments);
                     updateToolbarIconVisibilityForFragment(destination);
+                    updateToolbarIconForFragment(destination);
                     invalidateOptionsMenu();
                 });
             } else {
@@ -216,6 +318,7 @@ public class MainActivity extends AppCompatActivity {
             NavDestination currentDestination = currentNavController.getCurrentDestination();
             if (currentDestination != null) {
                 updateToolbarTitleForFragment(currentDestination, currentNavController.getCurrentBackStackEntry() != null ? currentNavController.getCurrentBackStackEntry().getArguments() : null);
+                updateToolbarIconForFragment(currentDestination);
             }
         }
     }
@@ -255,13 +358,25 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void updateToolbarIconForFragment(NavDestination destination) {
+        int destinationId = destination.getId();
+        if (destinationId != R.id.listMoviesFragment && destinationId != R.id.favoriteFragment &&
+                destinationId != R.id.settingFragment && destinationId != R.id.aboutFragment) {
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_back);
+        } else {
+            Drawable profileIcon = ContextCompat.getDrawable(this, R.drawable.ic_profile);
+            if (profileIcon != null) {
+                getSupportActionBar().setHomeAsUpIndicator(profileIcon);
+            }
+        }
+    }
+
     private void syncActionBarWithNavController(int position) {
         NavController currentNavController = navControllers.get(position);
         if (currentNavController != null) {
             appBarConfiguration = new AppBarConfiguration.Builder(currentNavController.getGraph())
                     .setOpenableLayout(binding.drawerLayout)
                     .build();
-            NavigationUI.setupWithNavController(binding.toolbar, currentNavController, appBarConfiguration);
         }
     }
 
@@ -270,6 +385,16 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+            Drawable profileIcon = ContextCompat.getDrawable(this, R.drawable.ic_profile);
+            if (profileIcon != null) {
+                getSupportActionBar().setHomeAsUpIndicator(profileIcon);
+            } else {
+                Log.e("MainActivity", "Failed to load ic_profile drawable");
+            }
+        } else {
+            Log.e("MainActivity", "ActionBar is null");
         }
 
         binding.toolbarIconList.setOnClickListener(v -> sharedViewModel.toggleGridMode());
@@ -280,11 +405,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void setUpDrawer() {
-        ActionBarDrawerToggle mActionBarDrawerToggle = new ActionBarDrawerToggle(
-                this, binding.drawerLayout, binding.toolbar, R.string.nav_open, R.string.nav_close);
-        binding.drawerLayout.addDrawerListener(mActionBarDrawerToggle);
-        mActionBarDrawerToggle.setHomeAsUpIndicator(R.drawable.ic_launcher_foreground);
-        mActionBarDrawerToggle.syncState();
+        binding.drawerLayout.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                super.onDrawerOpened(drawerView);
+            }
+
+            @Override
+            public void onDrawerClosed(View drawerView) {
+                super.onDrawerClosed(drawerView);
+            }
+        });
+
         headerBinding = NavHeaderBinding.bind(binding.navView.getHeaderView(0));
         headerBinding.setViewModel(userViewModel);
         headerBinding.setLifecycleOwner(this);
@@ -360,9 +492,7 @@ public class MainActivity extends AppCompatActivity {
             try {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                 calendar.setTime(sdf.parse(currentBirthday));
-            } catch (Exception e) {
-                // Ignore
-            }
+            } catch (Exception e) {}
         }
 
         int year = calendar.get(Calendar.YEAR);
@@ -402,89 +532,6 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.show();
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.menu_search);
-        SearchView searchView = (SearchView) searchItem.getActionView(); // Đúng kiểu androidx.appcompat.widget.SearchView
-        searchView.setQueryHint("Search movies...");
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                movieViewModel.searchMovies(query);
-                return true;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                movieViewModel.searchMovies(newText);
-                return true;
-            }
-        });
-
-        searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return true;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                movieViewModel.refreshMovies();
-                return true;
-            }
-        });
-
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId = item.getItemId();
-        String selectedCategory = null;
-
-        if (itemId == R.id.category_popular) {
-            selectedCategory = "popular";
-        } else if (itemId == R.id.category_top_rated) {
-            selectedCategory = "top_rated";
-        } else if (itemId == R.id.category_upcoming) {
-            selectedCategory = "upcoming";
-        } else if (itemId == R.id.category_now_playing) {
-            selectedCategory = "now_playing";
-        }
-
-        if (selectedCategory != null) {
-            settingPreference.setCategory(selectedCategory);
-            movieViewModel.refreshMovies();
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        int currentTab = binding.viewPager.getCurrentItem();
-        NavController currentNavController = navControllers.get(currentTab);
-        boolean shouldShowMenu = false;
-
-        if (currentNavController != null) {
-            NavDestination currentDestination = currentNavController.getCurrentDestination();
-            if (currentDestination != null) {
-                int destinationId = currentDestination.getId();
-                shouldShowMenu = (currentTab == 0 && destinationId == R.id.listMoviesFragment);
-            }
-        }
-
-        for (int i = 0; i < menu.size(); i++) {
-            menu.getItem(i).setVisible(shouldShowMenu);
-        }
-
-        return super.onPrepareOptionsMenu(menu);
-    }
-
     private void setupBackPressedHandler() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -512,7 +559,7 @@ public class MainActivity extends AppCompatActivity {
         int currentItem = binding.viewPager.getCurrentItem();
         NavController currentNavController = navControllers.get(currentItem);
         if (currentNavController != null && appBarConfiguration != null) {
-            return NavigationUI.navigateUp(currentNavController, appBarConfiguration) || super.onSupportNavigateUp();
+            return currentNavController.navigateUp() || super.onSupportNavigateUp();
         }
         return super.onSupportNavigateUp();
     }
