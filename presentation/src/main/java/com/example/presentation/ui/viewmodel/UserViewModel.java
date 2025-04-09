@@ -182,7 +182,6 @@ public class UserViewModel extends ViewModel {
         return null;
     }
 
-    // Getters for LiveData
     public LiveData<String> getNameLiveData() {
         return nameLiveData;
     }
@@ -211,7 +210,6 @@ public class UserViewModel extends ViewModel {
         return errorMessageLiveData;
     }
 
-    // Setters to update MutableLiveData
     public void setBirthday(String birthday) {
         birthdayLiveData.setValue(birthday);
     }
