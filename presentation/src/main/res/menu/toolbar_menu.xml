@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_category"
+        android:title="Category"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/category_popular"
+                android:title="popular" />
+            <item
+                android:id="@+id/category_top_rated"
+                android:title="top_rated" />
+            <item
+                android:id="@+id/category_upcoming"
+                android:title="upcoming" />
+            <item
+                android:id="@+id/category_now_playing"
+                android:title="now_playing" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/menu_search"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title="Search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="ifRoom|collapseActionView" />
+</menu>

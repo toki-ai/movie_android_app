@@ -56,7 +56,7 @@
             android:gravity="end"
             android:textStyle="bold"
             android:enabled="@{isEditMode}"
-            android:backgroundTint="@{isEditMode ?  @color/text_sub : @android:color/transparent}"
+            android:backgroundTint="@{isEditMode ?  @color/underline : @android:color/transparent}"
             android:textSize="24dp"
             android:layout_marginTop="10dp"
             android:translationX="-30dp"
@@ -108,6 +108,7 @@
             android:enabled="@{isEditMode}"
             android:layout_marginTop="10dp"
             android:layout_marginStart="10dp"
+            android:backgroundTint="@color/underline"
             android:textSize="15dp"
             app:layout_constraintStart_toEndOf="@id/drawer_icon_cake"
             app:layout_constraintTop_toBottomOf="@+id/drawer_icon_cake" />

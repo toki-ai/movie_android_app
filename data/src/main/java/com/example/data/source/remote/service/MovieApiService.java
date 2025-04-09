@@ -29,4 +29,11 @@ public interface MovieApiService {
             @Path("movieId") int movieId,
             @Query("api_key") String apiKey
     );
+
+    @GET("search/movie")
+    Single<MovieResponse> searchMovies(
+            @Query("api_key") String apiKey,
+            @Query("query") String query,
+            @Query("page") int page
+    );
 }

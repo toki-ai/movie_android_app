@@ -51,7 +51,7 @@ public class ReminderWorker extends Worker {
             if (reminder != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                         ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                    StyleConfig.returnStyle(getApplicationContext(), "No notification permission");
+                    StyleConfig.returnToast(getApplicationContext(), "No notification permission");
                     return Result.failure();
                 }
                 showNotification(reminder);

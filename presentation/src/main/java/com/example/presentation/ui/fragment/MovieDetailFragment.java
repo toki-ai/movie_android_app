@@ -64,7 +64,7 @@ public class MovieDetailFragment extends Fragment {
                 if (isGranted) {
                     setAlarmAndShowNotification();
                 } else {
-                    StyleConfig.returnStyle(requireContext(), "Notification permission is required for reminders");
+                    StyleConfig.returnToast(requireContext(), "Notification permission is required for reminders");
                 }
             });
 
@@ -118,7 +118,7 @@ public class MovieDetailFragment extends Fragment {
                                             binding.detailReminderInfo.setText("No reminder set");
                                         }
                                     },
-                                    throwable -> StyleConfig.returnStyle(requireContext(), "Error loading movies: " + throwable.getMessage())
+                                    throwable -> StyleConfig.returnToast(requireContext(), "Error loading movies: " + throwable.getMessage())
                             )
             );
 
@@ -149,7 +149,7 @@ public class MovieDetailFragment extends Fragment {
                                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                                 binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(existingReminder.getReminderTime()));
                                 reminderViewModel.loadReminder();
-                            }, throwable -> StyleConfig.returnStyle(requireContext(), "Error updating reminder:" + throwable.getMessage()))
+                            }, throwable -> StyleConfig.returnToast(requireContext(), "Error updating reminder:" + throwable.getMessage()))
             );
         } else {
             disposables.add(
@@ -161,7 +161,7 @@ public class MovieDetailFragment extends Fragment {
                                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                                 binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(pendingReminder.getReminderTime()));
                                 reminderViewModel.loadReminder();
-                            }, throwable -> StyleConfig.returnStyle(requireContext(), "Error adding reminder: " + throwable.getMessage()))
+                            }, throwable -> StyleConfig.returnToast(requireContext(), "Error adding reminder: " + throwable.getMessage()))
             );
         }
     }
@@ -205,9 +205,9 @@ public class MovieDetailFragment extends Fragment {
             WorkManager.getInstance(requireContext())
                     .enqueueUniqueWork("reminder_" + reminder.getMovieId(), ExistingWorkPolicy.KEEP, workRequest);
 
-            StyleConfig.returnStyle(requireContext(),"Scheduled new WorkManager successfully");
+            StyleConfig.returnToast(requireContext(),"Scheduled new WorkManager successfully");
         } else {
-            StyleConfig.returnStyle(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay);
+            StyleConfig.returnToast(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay);
         }
     }
 
@@ -237,9 +237,9 @@ public class MovieDetailFragment extends Fragment {
             workManager.cancelUniqueWork("reminder_" + reminder.getMovieId());
             workManager.enqueueUniqueWork("reminder_" + reminder.getMovieId(), ExistingWorkPolicy.REPLACE, workRequest);
 
-            StyleConfig.returnStyle(requireContext(), "Updated WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay);
+            StyleConfig.returnToast(requireContext(), "Updated WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay);
         } else {
-            StyleConfig.returnStyle(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay);
+            StyleConfig.returnToast(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay);
         }
     }
 

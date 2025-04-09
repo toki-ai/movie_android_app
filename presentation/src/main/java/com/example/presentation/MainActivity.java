@@ -12,6 +12,8 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -34,12 +36,14 @@ import androidx.navigation.ui.NavigationUI;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.viewpager2.widget.ViewPager2;
 
+import com.example.data.preference.SettingPreference;
 import com.example.presentation.databinding.ActivityMainBinding;
 import com.example.presentation.databinding.NavHeaderBinding;
 import com.example.presentation.di.MyApplication;
 import com.example.presentation.ui.adapter.ReminderAdapter;
 import com.example.presentation.ui.adapter.ViewPagerAdapter;
 import com.example.presentation.ui.viewmodel.FavoriteViewModel;
+import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.ReminderViewModel;
 import com.example.presentation.ui.viewmodel.SharedViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
@@ -75,6 +79,10 @@ public class MainActivity extends AppCompatActivity {
     ReminderViewModel reminderViewModel;
     @Inject
     FavoriteViewModel favoriteViewModel;
+    @Inject
+    MovieViewModel movieViewModel;
+    @Inject
+    SettingPreference settingPreference;
 
     private Bitmap profileImageBitmap;
 
@@ -97,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
         favoriteViewModel.loadFavoriteMovies();
 
         observeToolbarTitle();
+        updateToolbarIconVisibility(0);
 
         userViewModel.getImageLiveData().observe(this, image -> {
             if (image != null && !image.startsWith("http")) {
@@ -149,6 +158,7 @@ public class MainActivity extends AppCompatActivity {
                 updateNavController(tab.getPosition());
                 syncActionBarWithNavController(tab.getPosition());
                 updateToolbarIconVisibility(tab.getPosition());
+                invalidateOptionsMenu();
             }
 
             @Override
@@ -164,6 +174,7 @@ public class MainActivity extends AppCompatActivity {
                 binding.tabLayout.selectTab(binding.tabLayout.getTabAt(position));
                 updateNavController(position);
                 syncActionBarWithNavController(position);
+                invalidateOptionsMenu();
             }
         });
 
@@ -195,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
                     updateToolbarTitleForFragment(destination, arguments);
                     updateToolbarIconVisibilityForFragment(destination);
+                    invalidateOptionsMenu();
                 });
             } else {
                 Log.e("NavDebug", "NavHostFragment is null for tag: f" + position);
@@ -322,7 +334,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 binding.drawerLayout.closeDrawer(GravityCompat.START);
             } else {
-                StyleConfig.returnStyle(this, "NavController is null for tab " + currentTab);
+                StyleConfig.returnToast(this, "NavController is null for tab " + currentTab);
             }
         });
 
@@ -362,7 +374,7 @@ public class MainActivity extends AppCompatActivity {
                 (view, selectedYear, selectedMonth, selectedDay) -> {
                     String selectedDate = String.format(Locale.getDefault(), "%02d/%02d/%d", selectedDay, selectedMonth + 1, selectedYear);
                     userViewModel.setBirthday(selectedDate);
-                    headerBinding.profileBirthday.setText(selectedDate); // Cập nhật UI thủ công
+                    headerBinding.profileBirthday.setText(selectedDate);
                 },
                 year, month, day
         );
@@ -389,8 +401,55 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.show();
     }
 
-    public Bitmap getProfileImageBitmap() {
-        return profileImageBitmap;
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId = item.getItemId();
+        String selectedCategory = null;
+
+        if (itemId == R.id.category_popular) {
+            selectedCategory = "popular";
+        } else if (itemId == R.id.category_top_rated) {
+            selectedCategory = "top_rated";
+        } else if (itemId == R.id.category_upcoming) {
+            selectedCategory = "upcoming";
+        } else if (itemId == R.id.category_now_playing) {
+            selectedCategory = "now_playing";
+        }
+
+        if (selectedCategory != null) {
+            settingPreference.setCategory(selectedCategory);
+            movieViewModel.refreshMovies();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        int currentTab = binding.viewPager.getCurrentItem();
+        NavController currentNavController = navControllers.get(currentTab);
+        boolean shouldShowMenu = false;
+
+        if (currentNavController != null) {
+            NavDestination currentDestination = currentNavController.getCurrentDestination();
+            if (currentDestination != null) {
+                int destinationId = currentDestination.getId();
+                shouldShowMenu = (currentTab == 0 && destinationId == R.id.listMoviesFragment);
+            }
+        }
+
+        for (int i = 0; i < menu.size(); i++) {
+            menu.getItem(i).setVisible(shouldShowMenu);
+        }
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     private void setupBackPressedHandler() {
@@ -434,7 +493,7 @@ public class MainActivity extends AppCompatActivity {
                         headerBinding.profileAvatar.setImageBitmap(profileImageBitmap);
                         userViewModel.setImage(userViewModel.bitmapToBase64(profileImageBitmap));
                     } catch (Exception e) {
-                        StyleConfig.returnStyle(this, "Error loading image: " + e.getMessage());
+                        StyleConfig.returnToast(this, "Error loading image: " + e.getMessage());
                     }
                 }
             });
@@ -455,7 +514,7 @@ public class MainActivity extends AppCompatActivity {
                 if (isGranted) {
                     cameraLauncher.launch(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
                 } else {
-                    StyleConfig.returnStyle(this, "Camera permission denied!");
+                    StyleConfig.returnToast(this, "Camera permission denied!");
                 }
             });
 }

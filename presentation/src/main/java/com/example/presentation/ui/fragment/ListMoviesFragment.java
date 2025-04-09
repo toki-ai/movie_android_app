@@ -72,7 +72,7 @@ public class ListMoviesFragment extends Fragment {
                                     adapter.notifyDataSetChanged();
                                     adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {});
                                 },
-                                throwable -> StyleConfig.returnStyle(requireContext(), "Error loading movies: " + throwable.getMessage())
+                                throwable -> StyleConfig.returnToast(requireContext(), "Error loading movies: " + throwable.getMessage())
                         )
         );
 
