@@ -23,7 +23,7 @@ public class MovieDtoToMovieMapper {
         );
     }
 
-    public Movie mapDetail(MovieDto dto, boolean isFavorite, List<CastCrew> credits) {
+    public Movie mapDetail(MovieDto dto, boolean isFavorite, List<CastCrew> casts, List<CastCrew> crews) {
         return new Movie(
                 dto.getId(),
                 dto.getTitle(),
@@ -34,7 +34,8 @@ public class MovieDtoToMovieMapper {
                 dto.getPosterPath(),
                 dto.isAdult(),
                 isFavorite,
-                credits
+                casts,
+                crews
         );
     }
 }

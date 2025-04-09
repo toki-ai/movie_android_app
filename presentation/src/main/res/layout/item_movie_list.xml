@@ -10,42 +10,15 @@
         android:layout_height="wrap_content"
         android:background="@color/main_bg"
         android:padding="8dp">
-        <TextView
-            android:id="@+id/movieTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@{movie.title}"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"/>
         <ImageView
             android:id="@+id/movieImage"
             android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="8dp"
-            android:scaleType="centerCrop"
+            android:layout_height="120dp"
+            android:scaleType="fitCenter"
             app:imageUrl="@{movie.posterPathUrl}"
             android:src="@drawable/img_slash_bg"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/movieTitle" />
-        <TextView
-            android:id="@+id/movieReleaseDateHeading"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingStart="10dp"
-            android:text="Release date: "
-            android:textColor="@android:color/black"
-            app:layout_constraintStart_toEndOf="@id/movieImage"
-            app:layout_constraintTop_toTopOf="@id/movieImage" />
-        <TextView
-            android:id="@+id/movieReleaseDate"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:text="@{movie.releaseDate}"
-            android:textColor="@android:color/holo_red_light"
-            app:layout_constraintStart_toEndOf="@id/movieReleaseDateHeading"
-            app:layout_constraintTop_toTopOf="@id/movieImage" />
+            app:layout_constraintTop_toTopOf="parent" />
         <ImageView
             android:id="@+id/btn_movieFavorite"
             android:layout_width="40dp"
@@ -53,44 +26,70 @@
             android:scaleType="centerCrop"
             android:layout_marginTop="20dp"
             android:layout_marginEnd="10dp"
-            android:src="@{movie.isFavorite ? @drawable/ystart : @drawable/start}"
+            android:src="@{movie.isFavorite ? @drawable/ic_fav : @drawable/ic_fav_outline}"
             android:onClick="@{() -> viewModel.toggleFavorite(movie)}"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
         <TextView
-            android:id="@+id/movieRatingHeading"
+            android:id="@+id/movieTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Rating: "
-            android:paddingStart="10dp"
-            android:textColor="@android:color/black"
-            app:layout_constraintStart_toEndOf="@id/movieImage"
-            app:layout_constraintTop_toBottomOf="@id/movieReleaseDate" />
+            android:text="@{movie.title}"
+            android:layout_marginStart="10dp"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textStyle="bold"
+            android:textColor="@color/text_main"
+            app:layout_constraintStart_toEndOf="@+id/movieImage"
+            app:layout_constraintTop_toTopOf="@+id/movieImage"/>
+
+        <RatingBar
+            android:id="@+id/movieRatingBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:numStars="5"
+            android:stepSize="0.5"
+            android:isIndicator="true"
+            android:layout_marginVertical="4dp"
+            android:progressTint="@android:color/holo_orange_light"
+            style="?android:attr/ratingBarStyleSmall"
+            app:layout_constraintStart_toStartOf="@id/movieTitle"
+            app:layout_constraintTop_toBottomOf="@id/movieTitle"
+            android:rating="@{(float)(movie.voteAverage / 2)}"
+            />
+
         <TextView
-            android:id="@+id/movieRating"
+            android:id="@+id/movieReleaseDateHeading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@{String.valueOf(movie.voteAverage) + `/10.0`}"
-            android:textAppearance="@style/TextAppearance.AppCompat.Small"
-            android:textColor="@android:color/holo_red_light"
-            app:layout_constraintStart_toEndOf="@id/movieRatingHeading"
-            app:layout_constraintTop_toBottomOf="@id/movieReleaseDate" />
+            android:text="Release date: "
+            android:textColor="@color/text_sub"
+            app:layout_constraintStart_toStartOf="@id/movieTitle"
+            app:layout_constraintTop_toBottomOf="@id/movieRatingBar" />
+        <TextView
+            android:id="@+id/movieReleaseDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@{movie.releaseDate}"
+            android:textColor="@color/text_sub"
+            app:layout_constraintStart_toEndOf="@id/movieReleaseDateHeading"
+            app:layout_constraintTop_toBottomOf="@id/movieRatingBar" />
+
         <TextView
             android:id="@+id/movieOverviewHeading"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Overview: "
             android:paddingStart="10dp"
-            android:textColor="@android:color/holo_red_light"
+            android:textColor="@color/text_blue"
             app:layout_constraintStart_toEndOf="@id/movieImage"
-            app:layout_constraintTop_toBottomOf="@id/movieRating" />
+            app:layout_constraintTop_toBottomOf="@id/movieReleaseDateHeading" />
         <TextView
             android:id="@+id/movieOverview"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@{movie.overview}"
             android:paddingStart="10dp"
-            android:textColor="@android:color/black"
+            android:textColor="@color/text_sub"
             android:maxLines="2"
             android:ellipsize="end"
             android:paddingEnd="10dp"

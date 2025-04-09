@@ -10,12 +10,18 @@ public class CastCrew {
 
     private String profilePath;
 
+    private String character;
+
+    private String job;
+
     public CastCrew() {}
 
-    public CastCrew(int id, String name, String profilePath) {
+    public CastCrew(int id, String name, String profilePath, String character, String job) {
         this.id = id;
         this.name = name;
         this.profilePath = profilePath;
+        this.character =character;
+        this.job = job;
     }
 
     public int getId() {
@@ -44,5 +50,21 @@ public class CastCrew {
 
     public void setProfilePath(String profilePath) {
         this.profilePath = profilePath;
+    }
+
+    public String getCharacter() {
+        return character;
+    }
+
+    public void setCharacter(String character) {
+        this.character = character;
+    }
+
+    public String getJob() {
+        return job;
+    }
+
+    public void setJob(String job) {
+        this.job = job;
     }
 }

@@ -11,10 +11,13 @@ public class CastCrewDto {
     @SerializedName("profile_path")
     private String profilePath;
 
+    private String character;
+
+    private String job;
     public CastCrewDto() {
     }
 
-    public CastCrewDto(int id, String name, String profilePath) {
+    public CastCrewDto(int id, String name, String profilePath, String character, String job) {
         this.id = id;
         this.name = name;
         this.profilePath = profilePath;
@@ -42,5 +45,21 @@ public class CastCrewDto {
 
     public void setProfilePath(String profilePath) {
         this.profilePath = profilePath;
+    }
+
+    public String getJob() {
+        return job;
+    }
+
+    public void setJob(String job) {
+        this.job = job;
+    }
+
+    public String getCharacter() {
+        return character;
+    }
+
+    public void setCharacter(String character) {
+        this.character = character;
     }
 }

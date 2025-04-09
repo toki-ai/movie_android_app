@@ -1,16 +1,15 @@
 package com.example.presentation.ui.fragment;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -27,11 +26,14 @@ import androidx.work.WorkManager;
 
 import com.example.domain.entity.Movie;
 import com.example.domain.entity.Reminder;
+import com.example.presentation.R;
 import com.example.presentation.databinding.FragmentMovieDetailBinding;
 import com.example.presentation.di.MyApplication;
 import com.example.presentation.ui.adapter.CastCrewAdapter;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.ReminderViewModel;
+import com.example.presentation.util.HorizontailSpacingItemDecoration;
+import com.example.presentation.util.StyleConfig;
 import com.example.presentation.worker.ReminderWorker;
 
 import java.text.SimpleDateFormat;
@@ -47,7 +49,8 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class MovieDetailFragment extends Fragment {
     private FragmentMovieDetailBinding binding;
     private final CompositeDisposable disposables = new CompositeDisposable();
-    private CastCrewAdapter castCrewAdapter;
+    private CastCrewAdapter castAdapter;
+    private CastCrewAdapter crewAdapter;
     private Reminder pendingReminder;
 
     @Inject
@@ -61,7 +64,7 @@ public class MovieDetailFragment extends Fragment {
                 if (isGranted) {
                     setAlarmAndShowNotification();
                 } else {
-                    Toast.makeText(requireContext(), "Notification permission is required for reminders", Toast.LENGTH_SHORT).show();
+                    StyleConfig.returnStyle(requireContext(), "Notification permission is required for reminders");
                 }
             });
 
@@ -78,12 +81,22 @@ public class MovieDetailFragment extends Fragment {
         return binding.getRoot();
     }
 
+    @SuppressLint("SetTextI18n")
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        castCrewAdapter = new CastCrewAdapter();
+        castAdapter = new CastCrewAdapter();
+        crewAdapter = new CastCrewAdapter();
+        binding.detailCastList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+        binding.detailCastList.addItemDecoration(
+                new HorizontailSpacingItemDecoration((int) getResources().getDimension(R.dimen.reminder_item_spacing))
+        );
+        binding.detailCastList.setAdapter(castAdapter);
         binding.detailCrewList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        binding.detailCrewList.setAdapter(castCrewAdapter);
+        binding.detailCrewList.addItemDecoration(
+                new HorizontailSpacingItemDecoration((int) getResources().getDimension(R.dimen.reminder_item_spacing))
+        );
+        binding.detailCrewList.setAdapter(crewAdapter);
         binding.setViewModel(viewModel);
         Bundle args = getArguments();
         if (args != null) {
@@ -95,8 +108,8 @@ public class MovieDetailFragment extends Fragment {
                             .subscribe(
                                     movie -> {
                                         binding.setMovie(movie);
-                                        castCrewAdapter.submitList(movie.getCredits());
-
+                                        castAdapter.submitList(movie.getCasts());
+                                        crewAdapter.submitList(movie.getCrews());
                                         Reminder reminder = reminderViewModel.getReminderByMovieId(movieId);
                                         if (reminder != null) {
                                             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
@@ -105,9 +118,7 @@ public class MovieDetailFragment extends Fragment {
                                             binding.detailReminderInfo.setText("No reminder set");
                                         }
                                     },
-                                    throwable -> {
-                                        Toast.makeText(requireContext(), "Error loading movies: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
-                                    }
+                                    throwable -> StyleConfig.returnStyle(requireContext(), "Error loading movies: " + throwable.getMessage())
                             )
             );
 
@@ -123,6 +134,7 @@ public class MovieDetailFragment extends Fragment {
         }
     }
 
+    @SuppressLint("SetTextI18n")
     private void setAlarmAndShowNotification() {
         if (pendingReminder == null) return;
         Reminder existingReminder = reminderViewModel.getReminderByMovieId(pendingReminder.getMovieId());
@@ -137,9 +149,7 @@ public class MovieDetailFragment extends Fragment {
                                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                                 binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(existingReminder.getReminderTime()));
                                 reminderViewModel.loadReminder();
-                            }, throwable -> {
-                                Toast.makeText(requireContext(), "Error updating reminder:" + throwable.getMessage(), Toast.LENGTH_LONG).show();
-                            })
+                            }, throwable -> StyleConfig.returnStyle(requireContext(), "Error updating reminder:" + throwable.getMessage()))
             );
         } else {
             disposables.add(
@@ -151,18 +161,16 @@ public class MovieDetailFragment extends Fragment {
                                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                                 binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(pendingReminder.getReminderTime()));
                                 reminderViewModel.loadReminder();
-                            }, throwable -> {
-                                Toast.makeText(requireContext(), "Error adding reminder: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
-                            })
+                            }, throwable -> StyleConfig.returnStyle(requireContext(), "Error adding reminder: " + throwable.getMessage()))
             );
         }
     }
 
     private void showDateTimePicker(int movieId) {
         Calendar calendar = Calendar.getInstance();
-        new DatePickerDialog(requireContext(), (view, year, month, dayOfMonth) -> {
+        new DatePickerDialog(requireContext(),  R.style.MyDatePickerDialogTheme, (view, year, month, dayOfMonth) -> {
             calendar.set(year, month, dayOfMonth);
-            new TimePickerDialog(requireContext(), (view1, hourOfDay, minute) -> {
+            new TimePickerDialog(requireContext(), R.style.MyDatePickerDialogTheme, (view1, hourOfDay, minute) -> {
                 calendar.set(Calendar.HOUR_OF_DAY, hourOfDay);
                 calendar.set(Calendar.MINUTE, minute);
 
@@ -197,9 +205,9 @@ public class MovieDetailFragment extends Fragment {
             WorkManager.getInstance(requireContext())
                     .enqueueUniqueWork("reminder_" + reminder.getMovieId(), ExistingWorkPolicy.KEEP, workRequest);
 
-            Toast.makeText(requireContext(), "Scheduled new WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay, Toast.LENGTH_LONG).show();
+            StyleConfig.returnStyle(requireContext(),"Scheduled new WorkManager successfully");
         } else {
-            Toast.makeText(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay, Toast.LENGTH_LONG).show();
+            StyleConfig.returnStyle(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay);
         }
     }
 
@@ -229,9 +237,9 @@ public class MovieDetailFragment extends Fragment {
             workManager.cancelUniqueWork("reminder_" + reminder.getMovieId());
             workManager.enqueueUniqueWork("reminder_" + reminder.getMovieId(), ExistingWorkPolicy.REPLACE, workRequest);
 
-            Toast.makeText(requireContext(), "Updated WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay, Toast.LENGTH_LONG).show();
+            StyleConfig.returnStyle(requireContext(), "Updated WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay);
         } else {
-            Toast.makeText(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay, Toast.LENGTH_LONG).show();
+            StyleConfig.returnStyle(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay);
         }
     }
 

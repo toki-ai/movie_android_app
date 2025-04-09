@@ -4,11 +4,23 @@ import com.example.data.source.remote.model.CastCrewDto;
 import com.example.domain.entity.CastCrew;
 
 public class CastCrewDtoToCastCrewMapper {
-    public CastCrew map(CastCrewDto dto) {
+    public CastCrew mapCast(CastCrewDto dto) {
         return new CastCrew(
                 dto.getId(),
                 dto.getName(),
-                dto.getProfilePath()
+                dto.getProfilePath(),
+                dto.getCharacter(),
+                null
+        );
+    }
+
+    public CastCrew mapCrew(CastCrewDto dto) {
+        return new CastCrew(
+                dto.getId(),
+                dto.getName(),
+                dto.getProfilePath(),
+                null,
+                dto.getJob()
         );
     }
 }

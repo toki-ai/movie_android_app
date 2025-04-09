@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -17,11 +16,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.domain.entity.Movie;
+import com.example.presentation.R;
 import com.example.presentation.di.MyApplication;
 import com.example.presentation.databinding.FragmentListMoviesBinding;
 import com.example.presentation.ui.adapter.MovieAdapter;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.SharedViewModel;
+import com.example.presentation.util.SpacingItemDecoration;
+import com.example.presentation.util.StyleConfig;
 
 import javax.inject.Inject;
 
@@ -56,6 +58,9 @@ public class ListMoviesFragment extends Fragment {
 
         adapter = new MovieAdapter(false, viewModel, NavHostFragment.findNavController(this), MovieAdapter.TYPE.List);
         binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.recyclerView.addItemDecoration(
+                new SpacingItemDecoration((int) getResources().getDimension(R.dimen.grid_item_spacing))
+        );
         sharedViewModel.getIsGridLiveData().observe(getViewLifecycleOwner(), this::updateViewMode);
         binding.recyclerView.setAdapter(adapter);
         viewModel.refreshMovies();
@@ -67,7 +72,7 @@ public class ListMoviesFragment extends Fragment {
                                     adapter.notifyDataSetChanged();
                                     adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {});
                                 },
-                                throwable -> Toast.makeText(requireContext(), "Error loading movies: " + throwable.getMessage(), Toast.LENGTH_LONG).show()
+                                throwable -> StyleConfig.returnStyle(requireContext(), "Error loading movies: " + throwable.getMessage())
                         )
         );
 

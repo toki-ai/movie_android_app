@@ -125,12 +125,13 @@ public class MovieRepositoryImpl implements MovieRepository {
                 apiService.getMovieDetail(movieId, apiKey),
                 apiService.getMovieCredits(movieId, apiKey),
                 (detail, credits) -> {
-                    List<CastCrew> castCrewList = new ArrayList<>();
+                    List<CastCrew> castList = new ArrayList<>();
+                    List<CastCrew> crewList = new ArrayList<>();
                     for (CastCrewDto cast : credits.getCast()) {
-                        castCrewList.add(dtoToCastCrewMapper.map(cast));
+                        castList.add(dtoToCastCrewMapper.mapCast(cast));
                     }
                     for (CastCrewDto crew : credits.getCrew()) {
-                        castCrewList.add(dtoToCastCrewMapper.map(crew));
+                        crewList.add(dtoToCastCrewMapper.mapCrew(crew));
                     }
                     AtomicBoolean isFavorite = new AtomicBoolean(false);
                     getFavoriteMovies()
@@ -142,7 +143,7 @@ public class MovieRepositoryImpl implements MovieRepository {
                                 }
                             });
 
-                    return dtoToMovieMapper.mapDetail(detail, isFavorite.get(), castCrewList);
+                    return dtoToMovieMapper.mapDetail(detail, isFavorite.get(), castList, crewList);
                 }
         );
     }

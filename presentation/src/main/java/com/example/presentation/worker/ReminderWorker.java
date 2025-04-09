@@ -9,7 +9,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -21,6 +20,7 @@ import com.example.domain.entity.Reminder;
 import com.example.presentation.R;
 import com.example.presentation.di.MyApplication;
 import com.example.presentation.ui.viewmodel.ReminderViewModel;
+import com.example.presentation.util.StyleConfig;
 import com.squareup.picasso.Picasso;
 
 import java.io.IOException;
@@ -51,7 +51,7 @@ public class ReminderWorker extends Worker {
             if (reminder != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                         ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                    Toast.makeText(getApplicationContext(), "No notification permission", Toast.LENGTH_LONG).show();
+                    StyleConfig.returnStyle(getApplicationContext(), "No notification permission");
                     return Result.failure();
                 }
                 showNotification(reminder);

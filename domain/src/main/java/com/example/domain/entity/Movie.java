@@ -16,7 +16,8 @@ public class Movie {
     private String backdropPath;
     private boolean adult;
     private boolean isFavorite;
-    private List<CastCrew> credits;
+    private List<CastCrew> casts;
+    private List<CastCrew> crews;
 
     public Movie() {}
 
@@ -32,7 +33,7 @@ public class Movie {
         this.isFavorite = isFavorite;
     }
 
-    public Movie(int id, String title, String overview, String releaseDate, double voteAverage, String backdropPath, String posterPath, boolean adult, boolean isFavorite, List<CastCrew> credits) {
+    public Movie(int id, String title, String overview, String releaseDate, double voteAverage, String backdropPath, String posterPath, boolean adult, boolean isFavorite, List<CastCrew> casts, List<CastCrew> crews) {
         this.id = id;
         this.title = title;
         this.overview = overview;
@@ -42,7 +43,8 @@ public class Movie {
         this.posterPath = posterPath;
         this.adult = adult;
         this.isFavorite = isFavorite;
-        this.credits = credits;
+        this.casts = casts;
+        this.crews = crews;
     }
     public String getPosterPathUrl() {
         return Constants.IMAGE_BASE_URL + posterPath;
@@ -128,12 +130,20 @@ public class Movie {
         isFavorite = favorite;
     }
 
-    public List<CastCrew> getCredits() {
-        return credits;
+    public List<CastCrew> getCasts() {
+        return casts;
     }
 
-    public void setCredits(List<CastCrew> credits) {
-        this.credits = credits;
+    public void setCasts(List<CastCrew> casts) {
+        this.casts = casts;
+    }
+
+    public List<CastCrew> getCrews() {
+        return crews;
+    }
+
+    public void setCrews(List<CastCrew> crews) {
+        this.crews = crews;
     }
 
     @Override

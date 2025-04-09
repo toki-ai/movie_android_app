@@ -15,7 +15,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
@@ -46,6 +45,7 @@ import com.example.presentation.ui.viewmodel.SharedViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
 import com.example.presentation.util.Constant;
 import com.example.presentation.util.SpacingItemDecoration;
+import com.example.presentation.util.StyleConfig;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
@@ -223,7 +223,6 @@ public class MainActivity extends AppCompatActivity {
         } else if (destinationId == R.id.movieDetailFragment) {
             if (arguments != null && arguments.containsKey("arg_movie_title")) {
                 title = arguments.getString("arg_movie_title");
-                Toast.makeText(this, title, Toast.LENGTH_SHORT).show();
                 title = title != null ? title : "Movie Detail";
             } else {
                 title = "Movie Detail";
@@ -292,7 +291,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         headerBinding.profileBtnSave.setOnClickListener(v -> {
-            // Lấy dữ liệu từ UI và cập nhật vào ViewModel
             userViewModel.setName(headerBinding.profileName.getText().toString());
             userViewModel.setEmail(headerBinding.profileMail.getText().toString());
             userViewModel.setBirthday(headerBinding.profileBirthday.getText().toString());
@@ -324,7 +322,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 binding.drawerLayout.closeDrawer(GravityCompat.START);
             } else {
-                Toast.makeText(this, "NavController is null for tab " + currentTab, Toast.LENGTH_SHORT).show();
+                StyleConfig.returnStyle(this, "NavController is null for tab " + currentTab);
             }
         });
 
@@ -436,7 +434,7 @@ public class MainActivity extends AppCompatActivity {
                         headerBinding.profileAvatar.setImageBitmap(profileImageBitmap);
                         userViewModel.setImage(userViewModel.bitmapToBase64(profileImageBitmap));
                     } catch (Exception e) {
-                        Toast.makeText(this, "Error loading image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        StyleConfig.returnStyle(this, "Error loading image: " + e.getMessage());
                     }
                 }
             });
@@ -457,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
                 if (isGranted) {
                     cameraLauncher.launch(new Intent(MediaStore.ACTION_IMAGE_CAPTURE));
                 } else {
-                    Toast.makeText(this, "Camera permission denied!", Toast.LENGTH_SHORT).show();
+                    StyleConfig.returnStyle(this, "Camera permission denied!");
                 }
             });
 }

@@ -6,10 +6,10 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-public class SpacingItemDecoration extends RecyclerView.ItemDecoration {
+public class HorizontailSpacingItemDecoration extends RecyclerView.ItemDecoration {
     private final int spacing;
 
-    public SpacingItemDecoration(int spacing) {
+    public HorizontailSpacingItemDecoration(int spacing) {
         this.spacing = spacing;
     }
 
@@ -17,6 +17,6 @@ public class SpacingItemDecoration extends RecyclerView.ItemDecoration {
     public void getItemOffsets(@NonNull Rect outRect, @NonNull View view,
                                @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
 
-        outRect.top = spacing;
+        outRect.right = spacing;
     }
 }
