@@ -33,6 +33,18 @@ public class MovieViewModel extends ViewModel {
     private final SettingPreference settingPreference;
 
     private final BehaviorSubject<String> categorySubject = BehaviorSubject.createDefault("popular");
+    private final BehaviorSubject<String> querySubject = BehaviorSubject.createDefault("");
+    private final MutableLiveData<Movie> favoriteChangeLiveData = new MutableLiveData<>();
+
+    private static class Pair {
+        final String first;
+        final String second;
+
+        Pair(String first, String second) {
+            this.first = first;
+            this.second = second;
+        }
+    }
 
     @Inject
     public MovieViewModel(GetMoviesPagedUseCase getMoviesPagedUseCase,
@@ -46,11 +58,13 @@ public class MovieViewModel extends ViewModel {
         this.getMovieDetailUseCase = getMovieDetailUseCase;
         this.settingPreference = settingPreference;
 
-        moviesFlowable = categorySubject
+        moviesFlowable = BehaviorSubject.combineLatest(categorySubject, querySubject, (category, query) -> new Pair(category, query))
                 .toFlowable(BackpressureStrategy.LATEST)
-                .switchMap(category -> {
-                    Log.d("MovieViewModel", "Executing getMoviesPagedUseCase with category: " + category);
-                    return getMoviesPagedUseCase.execute(category);
+                .switchMap(pair -> {
+                    String category = pair.first;
+                    String query = pair.second;
+                    Log.d("MovieViewModel", "Executing getMoviesPagedUseCase with category: " + category + ", query: " + query);
+                    return getMoviesPagedUseCase.execute(category, query);
                 })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
@@ -58,6 +72,11 @@ public class MovieViewModel extends ViewModel {
 
     public void refreshMovies() {
         categorySubject.onNext(settingPreference.getCategory());
+        querySubject.onNext("");
+    }
+
+    public void searchMovies(String query) {
+        querySubject.onNext(query != null ? query : "");
     }
 
     public Flowable<PagingData<Movie>> getMovies() {
@@ -67,7 +86,6 @@ public class MovieViewModel extends ViewModel {
     public Single<Movie> getMovieDetail(int movieId) {
         return getMovieDetailUseCase.execute(movieId);
     }
-    private final MutableLiveData<Movie> favoriteChangeLiveData = new MutableLiveData<>();
 
     public void toggleFavorite(Movie movie) {
         boolean newFavoriteState = !movie.isFavorite();

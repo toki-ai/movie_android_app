@@ -10,7 +10,7 @@ import androidx.paging.PagingData;
 import java.util.List;
 
 public interface MovieRepository {
-    Flowable<PagingData<Movie>> getMovies(String type);
+    Flowable<PagingData<Movie>> getMovies(String type, String query);
     Single<List<Movie>> getFavoriteMovies();
     Completable addToFavorites(Movie movie);
     Completable removeFromFavorites(Movie movie);

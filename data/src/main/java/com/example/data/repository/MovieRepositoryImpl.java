@@ -2,7 +2,6 @@ package com.example.data.repository;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.util.Log;
 
 import androidx.paging.Pager;
 import androidx.paging.PagingConfig;
@@ -26,11 +25,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
 public class MovieRepositoryImpl implements MovieRepository {
     private final MovieApiService apiService;
@@ -40,8 +37,6 @@ public class MovieRepositoryImpl implements MovieRepository {
     private final CastCrewDtoToCastCrewMapper dtoToCastCrewMapper;
     private final MovieDtoToMovieMapper dtoToMovieMapper;
     private final SettingPreference settingPreference;
-    private final BehaviorSubject<String> categorySubject;
-    private final Flowable<PagingData<Movie>> pagingDataFlowable;
 
     public MovieRepositoryImpl(MovieApiService apiService, FavoriteMovieDao favoriteDao, String apiKey, Context context) {
         this.apiService = apiService;
@@ -51,26 +46,20 @@ public class MovieRepositoryImpl implements MovieRepository {
         this.dtoToMovieMapper = new MovieDtoToMovieMapper();
         this.dtoToCastCrewMapper = new CastCrewDtoToCastCrewMapper();
         this.settingPreference = new SettingPreference(context);
-        this.categorySubject = BehaviorSubject.createDefault(settingPreference.getCategory());
-
-        pagingDataFlowable = categorySubject
-                .toFlowable(BackpressureStrategy.LATEST)
-                .switchMap(category -> {
-                    Log.d("MovieRepository", "SwitchMap triggered for category: " + category);
-                    Pager<Integer, Movie> pager = new Pager<>(
-                            new PagingConfig(20),
-                            () -> new MoviePagingSource(apiService, apiKey, favoriteDao, settingPreference)
-                    );
-                    return PagingRx.getFlowable(pager);
-                });
     }
 
     @Override
-    public Flowable<PagingData<Movie>> getMovies(String type) {
-        Log.d("heheh", "HEHEH");
-        settingPreference.setCategory(type);
-        categorySubject.onNext(type);
-        return pagingDataFlowable;
+    public Flowable<PagingData<Movie>> getMovies(String type, String query) {
+        if (type != null && !type.isEmpty()) {
+            settingPreference.setCategory(type);
+        }
+
+        Pager<Integer, Movie> pager = new Pager<>(
+                new PagingConfig(20),
+                () -> new MoviePagingSource(apiService, apiKey, favoriteDao, settingPreference, query)
+        );
+
+        return PagingRx.getFlowable(pager);
     }
 
     @Override
@@ -84,6 +73,7 @@ public class MovieRepositoryImpl implements MovieRepository {
                     return movies;
                 });
     }
+
     @Override
     public Completable addToFavorites(Movie movie) {
         FavoriteMovieEntity entity = new FavoriteMovieEntity(
@@ -136,8 +126,8 @@ public class MovieRepositoryImpl implements MovieRepository {
                     AtomicBoolean isFavorite = new AtomicBoolean(false);
                     getFavoriteMovies()
                             .subscribe(favoriteMovies -> {
-                                for (Movie m : favoriteMovies){
-                                    if(m.getId() == detail.getId()){
+                                for (Movie m : favoriteMovies) {
+                                    if (m.getId() == detail.getId()) {
                                         isFavorite.set(true);
                                     }
                                 }

@@ -12,6 +12,7 @@ import androidx.paging.PagingSource.LoadParams;
 import com.example.data.mapper.MovieDtoToMovieMapper;
 import com.example.data.source.local.dao.FavoriteMovieDao;
 import com.example.data.source.local.entity.FavoriteMovieEntity;
+import com.example.data.source.remote.model.MovieResponse;
 import com.example.data.source.remote.service.MovieApiService;
 import com.example.domain.entity.Movie;
 import com.example.data.preference.SettingPreference;
@@ -31,15 +32,17 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
     private final MovieDtoToMovieMapper mapper;
     private final FavoriteMovieDao favoriteDao;
     private final SettingPreference settingPreference;
-    private int totalPages = 0; // Biến instance để lưu totalPages
+    private final String query;
+    private int totalPages = 0;
 
     public MoviePagingSource(MovieApiService apiService, String apiKey,
-                             FavoriteMovieDao favoriteDao, SettingPreference settingPreference) {
+                             FavoriteMovieDao favoriteDao, SettingPreference settingPreference, String query) {
         this.apiService = apiService;
         this.apiKey = apiKey;
         this.favoriteDao = favoriteDao;
         this.mapper = new MovieDtoToMovieMapper();
         this.settingPreference = settingPreference;
+        this.query = query;
     }
 
     @NonNull
@@ -50,7 +53,6 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
             currentPage = 1;
         }
 
-        Log.d(TAG, "Loading page: " + currentPage);
         Integer finalCurrentPage = currentPage;
         Integer finalCurrentPage1 = currentPage;
         return loadMoviesForPage(currentPage)
@@ -68,8 +70,16 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
         String sortBy = settingPreference.getSortBy();
         int minYear = settingPreference.getMinYear();
 
-        Log.d(TAG, "Loading movies for page " + page + ", category: " + category);
-        return apiService.getMoviesByCategory(category, apiKey, page)
+        Single<MovieResponse> movieResponseSingle;
+        if (query != null && !query.isEmpty()) {
+            Log.d(TAG, "Searching movies with query: " + query + ", page: " + page);
+            movieResponseSingle = apiService.searchMovies(apiKey, query, page);
+        } else {
+            Log.d(TAG, "Loading movies for page " + page + ", category: " + category);
+            movieResponseSingle = apiService.getMoviesByCategory(category, apiKey, page);
+        }
+
+        return movieResponseSingle
                 .flatMap(response -> {
                     totalPages = response.getTotalPages();
                     Log.d(TAG, "Page " + page + ": API returned " + response.getMovies().size() + " movies, total pages: " + totalPages);
@@ -94,11 +104,11 @@ public class MoviePagingSource extends RxPagingSource<Integer, Movie> {
 
                                 Comparator<Movie> comparator;
                                 if ("rating".equals(sortBy)) {
-                                    comparator = Comparator.comparingDouble(Movie::getVoteAverage).reversed(); // Giảm dần theo rating
+                                    comparator = Comparator.comparingDouble(Movie::getVoteAverage).reversed();
                                 } else {
                                     comparator = Comparator
                                             .comparing(Movie::getReleaseDate, Comparator.nullsLast(Comparator.naturalOrder()))
-                                            .reversed(); // Giảm dần theo ngày phát hành (releaseDate)
+                                            .reversed();
                                 }
 
                                 movies.sort(comparator);

@@ -16,8 +16,19 @@ public class GetMoviesPagedUseCase {
         this.movieRepository = movieRepository;
     }
 
-    public Flowable<PagingData<Movie>> execute(String type) {
-        Log.d("KKKK", "lll");
-        return movieRepository.getMovies(type);
+    public Flowable<PagingData<Movie>> execute(String type, String query) {
+        return movieRepository.getMovies(type,query);
     }
+
+    public Flowable<PagingData<Movie>> execute(String type) {
+        return movieRepository.getMovies(type, null);
+    }
+//    public Flowable<PagingData<Movie>> execute(String category, String query) {
+//        MoviePagingSource pagingSource = new MoviePagingSource(apiService, apiKey, favoriteDao, settingPreference, query);
+//        return Flowable.just(PagingData.from(pagingSource));
+//    }
+//
+//    public Flowable<PagingData<Movie>> execute(String category) {
+//        return execute(category, null); // Gọi với query = null cho chế độ thông thường
+//    }
 }
