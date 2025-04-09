@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CastCrewAdapter extends RecyclerView.Adapter<CastCrewAdapter.CastCrewViewHolder> {
-    private List<CastCrew> castCrewList = new ArrayList<>();
+    private final List<CastCrew> castCrewList = new ArrayList<>();
 
     @NonNull
     @Override

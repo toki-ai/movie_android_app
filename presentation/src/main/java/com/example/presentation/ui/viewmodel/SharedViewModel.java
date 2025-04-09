@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel;
 
 public class SharedViewModel extends ViewModel {
     private final MutableLiveData<Boolean> isGridLiveData = new MutableLiveData<>(false);
-    private final MutableLiveData<String> toolbarTitle = new MutableLiveData<>("Toki's Cinema");
+    private final MutableLiveData<String> toolbarTitle = new MutableLiveData<>("Cinema");
     public LiveData<String> getToolbarTitle() {
         return toolbarTitle;
     }

@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.os.Build;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -45,24 +46,19 @@ public class ReminderWorker extends Worker {
     @Override
     public Result doWork() {
         int movieId = getInputData().getInt("movie_id", -1);
-        Log.d("ReminderWorker", "doWork called with ID: " + movieId);
         if (movieId != -1) {
             Reminder reminder = reminderViewModel.getReminderByMovieId(movieId);
             if (reminder != null) {
-                Log.d("ReminderWorker", "Reminder found: " + reminder.getPosterUrl());
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                         ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
-                    Log.e("ReminderWorker", "No notification permission");
+                    Toast.makeText(getApplicationContext(), "No notification permission", Toast.LENGTH_LONG).show();
                     return Result.failure();
                 }
                 showNotification(reminder);
                 reminderViewModel.removeReminder(reminder)
                         .subscribeOn(Schedulers.io())
                         .subscribe(
-                                () -> {
-                                    Log.d("ReminderWorker", "Reminder removed successfully");
-                                    reminderViewModel.loadReminder();
-                                },
+                                () -> reminderViewModel.loadReminder(),
                                 throwable -> Log.e("ReminderWorker", "Error removing reminder: " + throwable.getMessage())
                         );
             } else {
@@ -73,7 +69,6 @@ public class ReminderWorker extends Worker {
     }
 
     private void showNotification(Reminder reminder) {
-        Log.d("HEHEH", "WJYYYYY");
         NotificationManager manager = (NotificationManager) getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Movie Reminders", NotificationManager.IMPORTANCE_DEFAULT);

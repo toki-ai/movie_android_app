@@ -25,12 +25,10 @@ public class ReminderAdapter extends RecyclerView.Adapter<ReminderAdapter.Remind
     private List<Reminder> reminders = new ArrayList<>();
     private final ReminderViewModel viewModel;
     private final NavController navController;
-    private final View navigationView;
     private int maxItems = Integer.MAX_VALUE;
 
     public ReminderAdapter(ReminderViewModel viewModel, View navigationView, NavController navController) {
         this.viewModel = viewModel;
-        this.navigationView = navigationView;
         this.navController = navController;
     }
 

@@ -1,5 +1,6 @@
 package com.example.presentation;
 
+import android.annotation.SuppressLint;
 import android.app.DatePickerDialog;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -60,7 +61,7 @@ import javax.inject.Inject;
 public class MainActivity extends AppCompatActivity {
     private ActivityMainBinding binding;
     private NavHeaderBinding headerBinding;
-    private List<NavController> navControllers = new ArrayList<>(Collections.nCopies(4, null));
+    private final List<NavController> navControllers = new ArrayList<>(Collections.nCopies(4, null));
     private AppBarConfiguration appBarConfiguration;
     private ReminderAdapter reminderShortAdapter;
     private SharedViewModel sharedViewModel;
@@ -84,15 +85,14 @@ public class MainActivity extends AppCompatActivity {
 
         sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
 
-        setupViewPager();
-        setUpToolbar();
+        setupViewPagerAndToolbarTitleAndVisibleIcon();
+        setUpToolbarGridMode();
         setUpDrawer();
         setupBackPressedHandler();
-        setupReminderShortList();
+
         userViewModel.loadUser();
         favoriteViewModel.loadFavoriteMovies();
 
-        // Quan sát tiêu đề từ SharedViewModel
         observeToolbarTitle();
     }
 
@@ -102,13 +102,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void setupViewPager() {
+    private void setupViewPagerAndToolbarTitleAndVisibleIcon() {
         ViewPagerAdapter adapter = new ViewPagerAdapter(this);
         binding.viewPager.setAdapter(adapter);
         binding.viewPager.setOffscreenPageLimit(3);
 
         new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
-            View customView = LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+            @SuppressLint("InflateParams") View customView = LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
             TextView tabText = customView.findViewById(R.id.tab_text);
             ImageView tabIcon = customView.findViewById(R.id.tab_icon);
             TextView tabBadge = customView.findViewById(R.id.tab_badge);
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 binding.viewPager.setCurrentItem(tab.getPosition());
                 updateNavController(tab.getPosition());
                 syncActionBarWithNavController(tab.getPosition());
-                updateToolbarTitleFromTab(tab.getPosition());
+                updateToolbarIconVisibility(tab.getPosition());
             }
 
             @Override
@@ -152,17 +152,15 @@ public class MainActivity extends AppCompatActivity {
                 binding.tabLayout.selectTab(binding.tabLayout.getTabAt(position));
                 updateNavController(position);
                 syncActionBarWithNavController(position);
-                updateToolbarTitleFromTab(position);
             }
         });
 
         for (int i = 0; i < adapter.getItemCount(); i++) {
-            updateNavController(i); // Khởi tạo NavController
+            updateNavController(i);
         }
 
         updateNavController(0);
         syncActionBarWithNavController(0);
-        updateToolbarTitleFromTab(0);
         updateToolbarIconVisibility(0);
     }
 
@@ -181,10 +179,7 @@ public class MainActivity extends AppCompatActivity {
             if (navHostFragment != null) {
                 NavController navController = navHostFragment.getNavController();
                 navControllers.set(position, navController);
-                Log.d("NavDebug", "NavController initialized for position: " + position);
-                // Gắn listener tại đây
                 navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
-                    Log.d("NavDebug", "Destination ID: " + destination.getId() + ", Label: " + destination.getLabel());
                     updateToolbarTitleForFragment(destination, arguments);
                     updateToolbarIconVisibilityForFragment(destination);
                 });
@@ -192,51 +187,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("NavDebug", "NavHostFragment is null for tag: f" + position);
             }
         }
-    }
-
-    private void syncActionBarWithNavController(int position) {
-        NavController currentNavController = navControllers.get(position);
-        if (currentNavController != null) {
-            appBarConfiguration = new AppBarConfiguration.Builder(currentNavController.getGraph())
-                    .setOpenableLayout(binding.drawerLayout)
-                    .build();
-            NavigationUI.setupWithNavController(binding.toolbar, currentNavController, appBarConfiguration);
-        }
-    }
-
-    public void setUpToolbar() {
-        Toolbar toolbar = binding.toolbar;
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-        }
-
-        binding.toolbarIconList.setOnClickListener(v -> sharedViewModel.toggleGridMode());
-
-        sharedViewModel.getIsGridLiveData().observe(this, isGrid -> binding.toolbarIconList.setImageResource(
-                isGrid ? R.drawable.icon_toolbar_list : R.drawable.icon_toolbar_grid
-        ));
-    }
-
-    private void updateToolbarTitleFromTab(int position) {
-        String title;
-        switch (position) {
-            case 0:
-                title = "List Movies";
-                break;
-            case 1:
-                title = "Favourite";
-                break;
-            case 2:
-                title = "Settings";
-                break;
-            case 3:
-                title = "About";
-                break;
-            default:
-                title = "Movie Title";
-        }
-        sharedViewModel.setToolbarTitle(title);
     }
 
     private void updateToolbarTitleForFragment(NavDestination destination, Bundle arguments) {
@@ -274,6 +224,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //implement back icon with nav graph
+    private void syncActionBarWithNavController(int position) {
+        NavController currentNavController = navControllers.get(position);
+        if (currentNavController != null) {
+            appBarConfiguration = new AppBarConfiguration.Builder(currentNavController.getGraph())
+                    .setOpenableLayout(binding.drawerLayout)
+                    .build();
+            NavigationUI.setupWithNavController(binding.toolbar, currentNavController, appBarConfiguration);
+        }
+    }
+
+    public void setUpToolbarGridMode() {
+        Toolbar toolbar = binding.toolbar;
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+
+        binding.toolbarIconList.setOnClickListener(v -> sharedViewModel.toggleGridMode());
+
+        sharedViewModel.getIsGridLiveData().observe(this, isGrid -> binding.toolbarIconList.setImageResource(
+                isGrid ? R.drawable.icon_toolbar_list : R.drawable.icon_toolbar_grid
+        ));
+    }
+
     public void setUpDrawer() {
         ActionBarDrawerToggle mActionBarDrawerToggle = new ActionBarDrawerToggle(
                 this, binding.drawerLayout, binding.toolbar, R.string.nav_open, R.string.nav_close);
@@ -285,11 +260,6 @@ public class MainActivity extends AppCompatActivity {
         headerBinding.setLifecycleOwner(this);
 
         userViewModel.getIsEditModeLiveData().observe(this, isEditMode -> headerBinding.setIsEditMode(isEditMode));
-        userViewModel.getErrorMessageLiveData().observe(this, errorMessage -> {
-            if (errorMessage != null) {
-                Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show();
-            }
-        });
 
         headerBinding.profileBirthday.setOnClickListener(v -> {
             if (userViewModel.getIsEditModeLiveData().getValue() != null && userViewModel.getIsEditModeLiveData().getValue()) {
@@ -333,6 +303,13 @@ public class MainActivity extends AppCompatActivity {
         });
 
         headerBinding.reminderShortList.setLayoutManager(new LinearLayoutManager(this));
+        reminderShortAdapter = new ReminderAdapter(reminderViewModel, binding.getRoot(), null);
+        reminderShortAdapter.setMaxItems(2);
+        headerBinding.reminderShortList.setAdapter(reminderShortAdapter);
+
+        reminderViewModel.getAllReminders().observe(this, reminders -> {
+            reminderShortAdapter.setReminders(reminders);
+        });
     }
 
     private void showDatePickerDialog() {
@@ -381,6 +358,10 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.show();
     }
 
+    public Bitmap getProfileImageBitmap() {
+        return profileImageBitmap;
+    }
+
     private void setupBackPressedHandler() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -403,16 +384,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void setupReminderShortList() {
-        reminderShortAdapter = new ReminderAdapter(reminderViewModel, binding.getRoot(), null);
-        reminderShortAdapter.setMaxItems(2);
-        headerBinding.reminderShortList.setAdapter(reminderShortAdapter);
-
-        reminderViewModel.getAllReminders().observe(this, reminders -> {
-            reminderShortAdapter.setReminders(reminders);
-        });
-    }
-
     @Override
     public boolean onSupportNavigateUp() {
         int currentItem = binding.viewPager.getCurrentItem();
@@ -423,10 +394,6 @@ public class MainActivity extends AppCompatActivity {
         return super.onSupportNavigateUp();
     }
 
-    public Bitmap getProfileImageBitmap() {
-        return profileImageBitmap;
-    }
-
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
@@ -434,9 +401,7 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         profileImageBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                         headerBinding.profileAvatar.setImageBitmap(profileImageBitmap);
-                        Log.d("MainActivity", "Gallery image loaded into Bitmap");
                     } catch (Exception e) {
-                        Log.e("MainActivity", "Error loading gallery image", e);
                         Toast.makeText(this, "Error loading image: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -448,7 +413,6 @@ public class MainActivity extends AppCompatActivity {
                     profileImageBitmap = (Bitmap) Objects.requireNonNull(result.getData().getExtras()).get("data");
                     if (profileImageBitmap != null) {
                         headerBinding.profileAvatar.setImageBitmap(profileImageBitmap);
-                        Log.d("MainActivity", "Camera image loaded into Bitmap");
                     }
                 }
             });

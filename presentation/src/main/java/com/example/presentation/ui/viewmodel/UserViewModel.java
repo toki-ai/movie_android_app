@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.Uri;
 import android.util.Log;
 
 import androidx.lifecycle.LiveData;
@@ -20,7 +19,6 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 
 import javax.inject.Inject;
 
@@ -130,7 +128,6 @@ public class UserViewModel extends ViewModel {
             return;
         }
 
-        // Kiểm tra kết nối mạng
         if (!isNetworkAvailable()) {
             Log.e("UserViewModel", "No network available");
             errorMessageLiveData.setValue("No network available");

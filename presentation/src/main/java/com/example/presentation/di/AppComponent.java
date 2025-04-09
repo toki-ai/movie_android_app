@@ -27,11 +27,7 @@ public interface AppComponent {
     void inject(FavoriteFragment fragment);
     void inject(SettingFragment fragment);
     void inject(AboutFragment fragment);
-    UserRepository userRepository();
-    GetUserUseCase getUserUseCase();
-    SaveUserUseCase saveUserUseCase();
     void inject(MovieViewModel movieViewModel);
-
     void inject(FavoriteViewModel favoriteViewModel);
 
     void inject(UserViewModel userViewModel);

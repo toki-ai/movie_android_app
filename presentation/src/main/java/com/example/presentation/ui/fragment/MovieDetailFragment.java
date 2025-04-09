@@ -20,7 +20,6 @@ import androidx.work.Data;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -28,13 +27,11 @@ import androidx.work.WorkManager;
 
 import com.example.domain.entity.Movie;
 import com.example.domain.entity.Reminder;
-import com.example.presentation.R;
 import com.example.presentation.databinding.FragmentMovieDetailBinding;
 import com.example.presentation.di.MyApplication;
 import com.example.presentation.ui.adapter.CastCrewAdapter;
 import com.example.presentation.ui.viewmodel.MovieViewModel;
 import com.example.presentation.ui.viewmodel.ReminderViewModel;
-import com.example.presentation.ui.viewmodel.SharedViewModel;
 import com.example.presentation.worker.ReminderWorker;
 
 import java.text.SimpleDateFormat;
@@ -64,9 +61,7 @@ public class MovieDetailFragment extends Fragment {
                 if (isGranted) {
                     setAlarmAndShowNotification();
                 } else {
-                    Toast.makeText(requireContext(),
-                            "Notification permission is required for reminders",
-                            Toast.LENGTH_SHORT).show();
+                    Toast.makeText(requireContext(), "Notification permission is required for reminders", Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -86,7 +81,6 @@ public class MovieDetailFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        SharedViewModel sharedViewModel = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
         castCrewAdapter = new CastCrewAdapter();
         binding.detailCrewList.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         binding.detailCrewList.setAdapter(castCrewAdapter);
@@ -94,8 +88,6 @@ public class MovieDetailFragment extends Fragment {
         Bundle args = getArguments();
         if (args != null) {
             int movieId = args.getInt("arg_movie_id", -1);
-            String movieTitle = args.getString("arg_movie_title", "");
-
             disposables.add(
                     viewModel.getMovieDetail(movieId)
                             .subscribeOn(Schedulers.io())
@@ -103,10 +95,8 @@ public class MovieDetailFragment extends Fragment {
                             .subscribe(
                                     movie -> {
                                         binding.setMovie(movie);
-                                        Log.d("TAGTAG", String.valueOf(movie.getCredits().size()));
                                         castCrewAdapter.submitList(movie.getCredits());
 
-                                        // Hiển thị Reminder nếu có
                                         Reminder reminder = reminderViewModel.getReminderByMovieId(movieId);
                                         if (reminder != null) {
                                             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
@@ -116,7 +106,6 @@ public class MovieDetailFragment extends Fragment {
                                         }
                                     },
                                     throwable -> {
-                                        Log.e("Movie Detail", "Error: " + throwable.getMessage());
                                         Toast.makeText(requireContext(), "Error loading movies: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
                                     }
                             )
@@ -144,13 +133,12 @@ public class MovieDetailFragment extends Fragment {
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(() -> {
-                                Log.d("Reminder", "Updated existing reminder with movieId: " + existingReminder.getMovieId());
                                 updateWorkManager(existingReminder);
                                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                                 binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(existingReminder.getReminderTime()));
                                 reminderViewModel.loadReminder();
                             }, throwable -> {
-                                Log.e("Reminder", "Error updating reminder: " + throwable.getMessage());
+                                Toast.makeText(requireContext(), "Error updating reminder:" + throwable.getMessage(), Toast.LENGTH_LONG).show();
                             })
             );
         } else {
@@ -159,13 +147,12 @@ public class MovieDetailFragment extends Fragment {
                             .subscribeOn(Schedulers.io())
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(() -> {
-                                Log.d("Reminder", "Added new reminder with movieId: " + pendingReminder.getMovieId());
                                 scheduleReminder(pendingReminder);
                                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
                                 binding.detailReminderInfo.setText("Reminder at: " + dateFormat.format(pendingReminder.getReminderTime()));
                                 reminderViewModel.loadReminder();
                             }, throwable -> {
-                                Log.e("Reminder", "Error adding reminder: " + throwable.getMessage());
+                                Toast.makeText(requireContext(), "Error adding reminder: " + throwable.getMessage(), Toast.LENGTH_LONG).show();
                             })
             );
         }
@@ -209,9 +196,10 @@ public class MovieDetailFragment extends Fragment {
 
             WorkManager.getInstance(requireContext())
                     .enqueueUniqueWork("reminder_" + reminder.getMovieId(), ExistingWorkPolicy.KEEP, workRequest);
-            Log.d("Reminder", "Scheduled new WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay);
+
+            Toast.makeText(requireContext(), "Scheduled new WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay, Toast.LENGTH_LONG).show();
         } else {
-            Log.e("Reminder", "Delay is negative or zero: " + delay);
+            Toast.makeText(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -240,9 +228,10 @@ public class MovieDetailFragment extends Fragment {
             WorkManager workManager = WorkManager.getInstance(requireContext());
             workManager.cancelUniqueWork("reminder_" + reminder.getMovieId());
             workManager.enqueueUniqueWork("reminder_" + reminder.getMovieId(), ExistingWorkPolicy.REPLACE, workRequest);
-            Log.d("Reminder", "Updated WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay);
+
+            Toast.makeText(requireContext(), "Updated WorkManager for movieId: " + reminder.getMovieId() + " with delay: " + delay, Toast.LENGTH_LONG).show();
         } else {
-            Log.e("Reminder", "Delay is negative or zero: " + delay);
+            Toast.makeText(requireContext(), "Can't schedule reminder with delay is negative or zero: " + delay, Toast.LENGTH_LONG).show();
         }
     }
 

@@ -25,7 +25,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 
 public class MovieViewModel extends ViewModel {
-    private Flowable<PagingData<Movie>> moviesFlowable;
+    private final Flowable<PagingData<Movie>> moviesFlowable;
     private final GetMoviesPagedUseCase getMoviesPagedUseCase;
     private final AddFavoriteMovieUseCase addFavoriteMovieUseCase;
     private final RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase;
@@ -85,10 +85,7 @@ public class MovieViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        () -> {
-                            Log.d("MovieViewModel", "Add favorite succeeded: " + movie.getTitle());
-                            notifyFavoriteChange(movie);
-                        },
+                        () -> notifyFavoriteChange(movie),
                         throwable -> Log.e("AddFavorite", "Error: " + throwable.getMessage())
                 );
     }
@@ -99,10 +96,7 @@ public class MovieViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        () -> {
-                            Log.d("MovieViewModel", "Remove favorite succeeded: " + movie.getTitle());
-                            notifyFavoriteChange(movie);
-                        },
+                        () -> notifyFavoriteChange(movie),
                         throwable -> Log.e("RemoveFavorite", "Error: " + throwable.getMessage())
                 );
     }

@@ -41,20 +41,15 @@ public class ReminderViewModel {
     }
 
     public Completable removeReminder(Reminder reminder) {
-        Log.d("ReminderWorker", "hehehe");
         return removeReminderUseCase.execute(reminder);
     }
 
     @SuppressLint("CheckResult")
     public void removeReminderNe(Reminder reminder) {
-        Log.d("ReminderViewModel", "Attempting to remove reminder with movieId: " + reminder.getMovieId());
         removeReminderUseCase.execute(reminder)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .doOnComplete(() -> {
-                    Log.d("ReminderViewModel", "Successfully removed reminder with movieId: " + reminder.getMovieId());
-                    loadReminder();
-                })
+                .doOnComplete(this::loadReminder)
                 .subscribe(
                         () -> {},
                         throwable -> Log.e("ReminderViewModel", "Error removing reminder: " + throwable.getMessage())
@@ -77,10 +72,7 @@ public class ReminderViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        reminders -> {
-                            Log.d("ReminderViewModel", "Loaded " + reminders.size() + " reminders");
-                            remindersLiveData.setValue(reminders);
-                        },
+                        remindersLiveData::setValue,
                         throwable -> Log.e("ReminderViewModel", "Error loading reminders: " + throwable.getMessage())
                 );
     }
