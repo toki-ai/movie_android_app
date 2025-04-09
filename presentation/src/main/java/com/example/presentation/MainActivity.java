@@ -8,6 +8,10 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
@@ -21,6 +25,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -32,6 +37,7 @@ import com.example.presentation.databinding.NavHeaderBinding;
 import com.example.presentation.di.MyApplication;
 import com.example.presentation.ui.adapter.ReminderAdapter;
 import com.example.presentation.ui.adapter.ViewPagerAdapter;
+import com.example.presentation.ui.viewmodel.FavoriteViewModel;
 import com.example.presentation.ui.viewmodel.ReminderViewModel;
 import com.example.presentation.ui.viewmodel.SharedViewModel;
 import com.example.presentation.ui.viewmodel.UserViewModel;
@@ -39,10 +45,6 @@ import com.example.presentation.util.Constant;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -61,11 +63,14 @@ public class MainActivity extends AppCompatActivity {
     private List<NavController> navControllers = new ArrayList<>(Collections.nCopies(4, null));
     private AppBarConfiguration appBarConfiguration;
     private ReminderAdapter reminderShortAdapter;
+    private SharedViewModel sharedViewModel;
 
     @Inject
     UserViewModel userViewModel;
     @Inject
     ReminderViewModel reminderViewModel;
+    @Inject
+    FavoriteViewModel favoriteViewModel;
 
     private Bitmap profileImageBitmap;
 
@@ -76,13 +81,25 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         userViewModel.setContext(this);
+
+        sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
+
         setupViewPager();
         setUpToolbar();
         setUpDrawer();
         setupBackPressedHandler();
         setupReminderShortList();
         userViewModel.loadUser();
+        favoriteViewModel.loadFavoriteMovies();
 
+        // Quan sát tiêu đề từ SharedViewModel
+        observeToolbarTitle();
+    }
+
+    private void observeToolbarTitle() {
+        sharedViewModel.getToolbarTitle().observe(this, title -> {
+            binding.toolbarTitle.setText(title);
+        });
     }
 
     private void setupViewPager() {
@@ -90,9 +107,28 @@ public class MainActivity extends AppCompatActivity {
         binding.viewPager.setAdapter(adapter);
         binding.viewPager.setOffscreenPageLimit(3);
 
-        new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) ->
-                tab.setText(Constant.TAB_TITLE_LIST.get(position)).setIcon(Constant.TAB_ICON_LIST.get(position))
-        ).attach();
+        new TabLayoutMediator(binding.tabLayout, binding.viewPager, (tab, position) -> {
+            View customView = LayoutInflater.from(this).inflate(R.layout.custom_tab, null);
+            TextView tabText = customView.findViewById(R.id.tab_text);
+            ImageView tabIcon = customView.findViewById(R.id.tab_icon);
+            TextView tabBadge = customView.findViewById(R.id.tab_badge);
+
+            tabText.setText(Constant.TAB_TITLE_LIST.get(position));
+            tabIcon.setImageResource(Constant.TAB_ICON_LIST.get(position));
+            tab.setCustomView(customView);
+
+            if (position == 1) {
+                favoriteViewModel.getFavoriteCountLiveData().observe(this, count -> {
+                    if (count != null && count > 0) {
+                        String displayText = count > 99 ? "99+" : String.valueOf(count);
+                        tabBadge.setText(displayText);
+                        tabBadge.setVisibility(View.VISIBLE);
+                    } else {
+                        tabBadge.setVisibility(View.GONE);
+                    }
+                });
+            }
+        }).attach();
 
         binding.tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
             @Override
@@ -100,6 +136,7 @@ public class MainActivity extends AppCompatActivity {
                 binding.viewPager.setCurrentItem(tab.getPosition());
                 updateNavController(tab.getPosition());
                 syncActionBarWithNavController(tab.getPosition());
+                updateToolbarTitleFromTab(tab.getPosition());
             }
 
             @Override
@@ -115,12 +152,26 @@ public class MainActivity extends AppCompatActivity {
                 binding.tabLayout.selectTab(binding.tabLayout.getTabAt(position));
                 updateNavController(position);
                 syncActionBarWithNavController(position);
+                updateToolbarTitleFromTab(position);
             }
         });
 
-        // Khởi tạo NavController cho tab đầu tiên
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            updateNavController(i); // Khởi tạo NavController
+        }
+
         updateNavController(0);
         syncActionBarWithNavController(0);
+        updateToolbarTitleFromTab(0);
+        updateToolbarIconVisibility(0);
+    }
+
+    private void updateToolbarIconVisibility(int position) {
+        if (position == 0) {
+            binding.toolbarIconList.setVisibility(View.VISIBLE);
+        } else {
+            binding.toolbarIconList.setVisibility(View.GONE);
+        }
     }
 
     private void updateNavController(int position) {
@@ -128,7 +179,17 @@ public class MainActivity extends AppCompatActivity {
             NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager()
                     .findFragmentByTag("f" + position);
             if (navHostFragment != null) {
-                navControllers.set(position, navHostFragment.getNavController());
+                NavController navController = navHostFragment.getNavController();
+                navControllers.set(position, navController);
+                Log.d("NavDebug", "NavController initialized for position: " + position);
+                // Gắn listener tại đây
+                navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
+                    Log.d("NavDebug", "Destination ID: " + destination.getId() + ", Label: " + destination.getLabel());
+                    updateToolbarTitleForFragment(destination, arguments);
+                    updateToolbarIconVisibilityForFragment(destination);
+                });
+            } else {
+                Log.e("NavDebug", "NavHostFragment is null for tag: f" + position);
             }
         }
     }
@@ -136,16 +197,14 @@ public class MainActivity extends AppCompatActivity {
     private void syncActionBarWithNavController(int position) {
         NavController currentNavController = navControllers.get(position);
         if (currentNavController != null) {
-            // Sử dụng constructor mới thay vì Builder
             appBarConfiguration = new AppBarConfiguration.Builder(currentNavController.getGraph())
-                    .setOpenableLayout(binding.drawerLayout) // Thay setDrawerLayout bằng setOpenableLayout
+                    .setOpenableLayout(binding.drawerLayout)
                     .build();
             NavigationUI.setupWithNavController(binding.toolbar, currentNavController, appBarConfiguration);
         }
     }
 
     public void setUpToolbar() {
-        SharedViewModel sharedViewModel = new ViewModelProvider(this).get(SharedViewModel.class);
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null) {
@@ -157,6 +216,62 @@ public class MainActivity extends AppCompatActivity {
         sharedViewModel.getIsGridLiveData().observe(this, isGrid -> binding.toolbarIconList.setImageResource(
                 isGrid ? R.drawable.icon_toolbar_list : R.drawable.icon_toolbar_grid
         ));
+    }
+
+    private void updateToolbarTitleFromTab(int position) {
+        String title;
+        switch (position) {
+            case 0:
+                title = "List Movies";
+                break;
+            case 1:
+                title = "Favourite";
+                break;
+            case 2:
+                title = "Settings";
+                break;
+            case 3:
+                title = "About";
+                break;
+            default:
+                title = "Movie Title";
+        }
+        sharedViewModel.setToolbarTitle(title);
+    }
+
+    private void updateToolbarTitleForFragment(NavDestination destination, Bundle arguments) {
+        int destinationId = destination.getId();
+        String title;
+        if (destinationId == R.id.listMoviesFragment) {
+            title = "List Movies";
+        } else if (destinationId == R.id.favoriteFragment) {
+            title = "Favourite";
+        } else if (destinationId == R.id.settingFragment) {
+            title = "Settings";
+        } else if (destinationId == R.id.aboutFragment) {
+            title = "About";
+        } else if (destinationId == R.id.reminderFragment) {
+            title = "Reminder";
+        } else if (destinationId == R.id.movieDetailFragment) {
+            if (arguments != null && arguments.containsKey("movieTitle")) {
+                title = arguments.getString("movieTitle");
+                title = title != null ? title : "Movie Detail";
+            } else {
+                title = "Movie Detail";
+            }
+        } else {
+            title = "Movie Title";
+        }
+        sharedViewModel.setToolbarTitle(title);
+    }
+
+    private void updateToolbarIconVisibilityForFragment(NavDestination destination) {
+        int destinationId = destination.getId();
+        if (destinationId == R.id.listMoviesFragment) {
+            binding.toolbarIconList.setVisibility(View.VISIBLE);
+        } else {
+            binding.toolbarIconList.setVisibility(View.GONE);
+        }
     }
 
     public void setUpDrawer() {
@@ -194,6 +309,7 @@ public class MainActivity extends AppCompatActivity {
 
         headerBinding.reminderBtnShow.setOnClickListener(v -> {
             int currentTab = binding.viewPager.getCurrentItem();
+            updateNavController(currentTab);
             NavController navController = navControllers.get(currentTab);
             if (navController != null) {
                 switch (currentTab) {
@@ -227,7 +343,7 @@ public class MainActivity extends AppCompatActivity {
                 SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                 calendar.setTime(sdf.parse(currentBirthday));
             } catch (Exception e) {
-
+                // Ignore
             }
         }
 
@@ -265,7 +381,6 @@ public class MainActivity extends AppCompatActivity {
         popupMenu.show();
     }
 
-
     private void setupBackPressedHandler() {
         getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
             @Override
@@ -289,7 +404,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setupReminderShortList() {
-        reminderShortAdapter = new ReminderAdapter(reminderViewModel, binding.getRoot(), null); // navController không cần thiết ở đây
+        reminderShortAdapter = new ReminderAdapter(reminderViewModel, binding.getRoot(), null);
         reminderShortAdapter.setMaxItems(2);
         headerBinding.reminderShortList.setAdapter(reminderShortAdapter);
 
@@ -311,7 +426,6 @@ public class MainActivity extends AppCompatActivity {
     public Bitmap getProfileImageBitmap() {
         return profileImageBitmap;
     }
-
 
     private final ActivityResultLauncher<Intent> galleryLauncher =
             registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {

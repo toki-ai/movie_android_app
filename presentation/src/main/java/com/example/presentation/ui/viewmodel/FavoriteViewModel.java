@@ -3,6 +3,7 @@ package com.example.presentation.ui.viewmodel;
 import android.annotation.SuppressLint;
 
 import androidx.lifecycle.LiveData;
+import androidx.lifecycle.LiveDataKt;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -21,7 +22,7 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 public class FavoriteViewModel extends ViewModel {
     private final GetFavoriteMoviesUseCase getFavoriteMoviesUseCase;
     private final MutableLiveData<List<Movie>> favoriteMoviesLiveData = new MutableLiveData<>();
-
+    private final MutableLiveData<Integer> favoriteCountLiveData = new MutableLiveData<>();
     @Inject
     public FavoriteViewModel(GetFavoriteMoviesUseCase getFavoriteMoviesUseCase,
                              RemoveFavoriteMovieUseCase removeFavoriteMovieUseCase) {
@@ -36,12 +37,21 @@ public class FavoriteViewModel extends ViewModel {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(
-                        movies -> favoriteMoviesLiveData.setValue(movies),
-                        throwable -> {}
+                        movies -> {
+                            favoriteMoviesLiveData.setValue(movies);
+                            favoriteCountLiveData.postValue(movies.size());
+                        },
+                        throwable -> {
+                            favoriteCountLiveData.postValue(0);
+                        }
                 );
     }
 
     public LiveData<List<Movie>> getFavoriteMovies() {
         return favoriteMoviesLiveData;
+    }
+
+    public LiveData<Integer> getFavoriteCountLiveData() {
+        return favoriteCountLiveData;
     }
 }
