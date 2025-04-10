@@ -93,6 +93,19 @@ public class MovieAdapter extends PagingDataAdapter<Movie, MovieAdapter.MovieVie
         MovieViewHolder(ItemMovieGridBinding binding) {
             super(binding.getRoot());
             this.gridBinding = binding;
+            itemView.setOnClickListener(v -> {
+                Movie movie = getItem(getBindingAdapterPosition());
+                if (movie != null && navController != null) {
+                    Bundle args = new Bundle();
+                    args.putInt("arg_movie_id", movie.getId());
+                    args.putString("arg_movie_title", movie.getTitle());
+
+                    int actionId = (fragmentType == TYPE.List)
+                            ? R.id.action_listMoviesFragment_to_movieDetailFragment
+                            : R.id.action_favoriteFragment_to_movieDetailFragment;
+                    navController.navigate(actionId, args);
+                }
+            });
         }
 
         MovieViewHolder(ItemMovieListBinding binding) {
