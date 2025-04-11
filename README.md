@@ -27,43 +27,43 @@ A modern Android application for browsing and managing movies using The Movie Da
 
 ### Splash Screen
 
-![Splash Screen](screenshots/slash_screen.png)
+<img src="screenshots/slash_screen.png" width="200" height="400" />
 
 ### Movie List (List View)
 
-![Movie List - List View](screenshots/list_tab.png)
+<img src="screenshots/list_tab.png" width="200" height="400" />
 
 ### Movie List (Grid View)
 
-![Movie List - Grid View](<screenshots/list_tab(grind_mode).png>)
+<img src="screenshots/list_tab(grind_mode).png" width="200" height="400" />
 
 ### Search
 
-![Search](screenshots/search.png)
+<img src="screenshots/search.png" width="200" height="400" />
 
 ### Movie Details
 
-![Movie Details](screenshots/detail_fragment.png)
+<img src="screenshots/detail_fragment.png" width="200" height="400" />
 
 ### Favorites
 
-![Favorites](screenshots/fav_tab.png)
+<img src="screenshots/fav_tab.png" width="200" height="400" />
 
 ### Settings
 
-![Settings](screenshots/setting_tab.png)
+<img src="screenshots/setting_tab.png" width="200" height="400" />
 
 ### Profile Drawer
 
-![Profile Drawer](screenshots/profile_drawer.png)
+<img src="screenshots/profile_drawer.png" width="200" height="400" />
 
 ### About
 
-![About](screenshots/about_tab.png)
+<img src="screenshots/about_tab.png" width="200" height="400" />
 
 ### Reminder
 
-![Reminder](screenshots/reminder_fragment.png)
+<img src="screenshots/reminder_fragment.png" width="200" height="400" />
 
 ## Technical Stack
 
