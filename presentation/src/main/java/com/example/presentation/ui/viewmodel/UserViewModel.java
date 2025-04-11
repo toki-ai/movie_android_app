@@ -70,40 +70,37 @@ public class UserViewModel extends ViewModel {
 
     @SuppressLint("CheckResult")
     public void loadUser() {
-        getUserUseCase.execute()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(
-                        user -> {
-                            nameLiveData.setValue(user.getName());
-                            birthdayLiveData.setValue(user.getBirthday());
-                            emailLiveData.setValue(user.getEmail());
-                            genderLiveData.setValue(user.isGender());
-                            imageLiveData.setValue(user.getImage());
-                        },
-                        throwable -> {
-                            User defaultUser = new User(
-                                    "Default User",
-                                    "https://example.com/default_image.jpg",
-                                    true,
-                                    "user@example.com",
-                                    "01/01/2000"
-                            );
-                            saveUserUseCase.execute(defaultUser)
-                                    .subscribeOn(Schedulers.io())
-                                    .observeOn(AndroidSchedulers.mainThread())
-                                    .subscribe(
-                                            u -> {
-                                                nameLiveData.setValue(defaultUser.getName());
-                                                birthdayLiveData.setValue(defaultUser.getBirthday());
-                                                emailLiveData.setValue(defaultUser.getEmail());
-                                                genderLiveData.setValue(defaultUser.isGender());
-                                                imageLiveData.setValue(defaultUser.getImage());
-                                            },
-                                            error -> errorMessageLiveData.setValue("Failed to save user: " + error.getMessage())
-                                    );
-                        }
+        getUserUseCase.execute().observeForever(user -> {
+            if (user != null) {
+                nameLiveData.setValue(user.getName());
+                birthdayLiveData.setValue(user.getBirthday());
+                emailLiveData.setValue(user.getEmail());
+                genderLiveData.setValue(user.isGender());
+                imageLiveData.setValue(user.getImage());
+            } else {
+                User defaultUser = new User(
+                        "Default User",
+                        "https://example.com/default_image.jpg",
+                        true,
+                        "user@example.com",
+                        "01/01/2000"
                 );
+
+                nameLiveData.setValue(defaultUser.getName());
+                birthdayLiveData.setValue(defaultUser.getBirthday());
+                emailLiveData.setValue(defaultUser.getEmail());
+                genderLiveData.setValue(defaultUser.isGender());
+                imageLiveData.setValue(defaultUser.getImage());
+
+                saveUserUseCase.execute(defaultUser)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                u -> {},
+                                error -> errorMessageLiveData.setValue("Failed to save user: " + error.getMessage())
+                        );
+            }
+        });
     }
 
     public void toggleEditMode(boolean enable) {

@@ -2,6 +2,9 @@ package com.example.data.source.remote.firebase;
 
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.example.domain.entity.User;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -14,32 +17,32 @@ import io.reactivex.rxjava3.core.Single;
 public class FirebaseUserDataSource {
     private static final String DEFAULT_USER_ID = "default_user";
     private final DatabaseReference userRef;
+    private final MutableLiveData<User> userLiveData = new MutableLiveData<>();
+    private ValueEventListener listener;
 
     public FirebaseUserDataSource() {
         userRef = FirebaseDatabase.getInstance().getReference("users").child(DEFAULT_USER_ID);
     }
 
-    public Single<User> getUser() {
-        return Single.create(emitter -> userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+    public LiveData<User> getUser() {
+        listener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.exists()) {
                     User user = snapshot.getValue(User.class);
                     if (user != null) {
-                        emitter.onSuccess(user);
-                    } else {
-                        emitter.onError(new Exception("User data is null"));
+                        userLiveData.setValue(user);
                     }
                 } else {
-                    emitter.onError(new Exception("User not found"));
+                    userLiveData.setValue(null);
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError error) {
-                emitter.onError(error.toException());
-            }
-        }));
+            public void onCancelled(DatabaseError error) {}
+        };
+        userRef.addValueEventListener(listener);
+        return userLiveData;
     }
 
     public Single<User> saveUser(User user) {
@@ -55,5 +58,11 @@ public class FirebaseUserDataSource {
                         emitter.onError(e);
                     });
         });
+    }
+
+    public void removeListener() {
+        if (listener != null) {
+            userRef.removeEventListener(listener);
+        }
     }
 }

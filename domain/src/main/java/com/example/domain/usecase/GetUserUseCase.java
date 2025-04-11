@@ -1,5 +1,7 @@
 package com.example.domain.usecase;
 
+import androidx.lifecycle.LiveData;
+
 import com.example.domain.entity.User;
 import com.example.domain.repository.UserRepository;
 
@@ -12,7 +14,7 @@ public class GetUserUseCase {
         this.repository = repository;
     }
 
-    public Single<User> execute() {
+    public LiveData<User> execute() {
         return repository.getUser();
     }
 }

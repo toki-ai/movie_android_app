@@ -1,5 +1,7 @@
 package com.example.data.repository;
 
+import androidx.lifecycle.LiveData;
+
 import com.example.data.source.remote.firebase.FirebaseUserDataSource;
 import com.example.domain.entity.User;
 import com.example.domain.repository.UserRepository;
@@ -14,7 +16,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Single<User> getUser() {
+    public LiveData<User> getUser() {
         return dataSource.getUser();
     }
 
@@ -23,3 +25,4 @@ public class UserRepositoryImpl implements UserRepository {
         return dataSource.saveUser(user);
     }
 }
+
